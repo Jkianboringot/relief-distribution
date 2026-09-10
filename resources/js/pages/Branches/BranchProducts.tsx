@@ -64,10 +64,10 @@ export default function BranchProducts({ branch, products }: Props) {
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
+                <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-[#f0ddc8] bg-[#fbead9] hover:bg-[#fbead9]">
+                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">
                                     PRODUCT
                                 </TableHead>
@@ -87,7 +87,7 @@ export default function BranchProducts({ branch, products }: Props) {
                             {products.data.map((product) => (
                                 <TableRow
                                     key={product.id}
-                                    className="border-b border-[#f0ddc8] last:border-0 hover:bg-[#fbf3e8]"
+                                    className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] "
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
                                         {product.name}
@@ -114,7 +114,7 @@ export default function BranchProducts({ branch, products }: Props) {
                                         className={`rounded-md px-3 py-1.5 text-sm ${
                                             link.active
                                                 ? 'bg-brand-orange font-bold text-white'
-                                                : 'text-subtle hover:bg-[#fbead9]'
+                                                : 'text-subtle hover:bg-[#d1d5db] '
                                         } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />

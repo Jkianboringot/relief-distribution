@@ -38,7 +38,7 @@ export default function Dashboard({ overallTotal, branchSales }: Props) {
                             {branchSales.map((branch) => {
                                 const pct = overallTotal > 0 ? (branch.total_sale / overallTotal) * 100 : 0;
                                 return (
-                                    <div key={branch.id} className="rounded-lg border border-[#f0ddc8] bg-white/60 p-4">
+                                    <div key={branch.id} className="rounded-lg border border-[#d1d5db] bg-white/60 p-4">
                                         <div className="mb-2 flex items-center justify-between">
                                             <span className="text-sm font-medium text-ink">{branch.location}</span>
                                             <span className="text-sm font-semibold text-ink">₱{branch.total_sale.toFixed(2)}</span>

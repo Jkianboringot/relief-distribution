@@ -177,9 +177,9 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
             </div>
 
             <form onSubmit={submit} className="w-full">
-                <div className="w-full overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
+                <div className="w-full overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
                     {/* Branch */}
-                    <div className="border-b border-[#f0ddc8] p-6">
+                    <div className="border-b border-[#d1d5db] p-6">
                         <h2 className="mb-4 text-sm font-semibold text-ink">Branch</h2>
                         <Select
                             value={data.branch_id ? String(data.branch_id) : undefined}
@@ -200,7 +200,7 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
                     </div>
 
                     {/* Products sold */}
-                    <div className="border-b border-[#f0ddc8] p-6">
+                    <div className="border-b border-[#d1d5db] p-6">
                         <div className="mb-1 flex items-center justify-between">
                             <h2 className="text-sm font-semibold text-ink">Products Sold</h2>
                             <Button
@@ -227,7 +227,7 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
                                 return (
                                     <div
                                         key={i}
-                                        className="flex flex-col gap-3 rounded-lg border border-[#f0ddc8] bg-white/60 p-3 sm:flex-row sm:items-start"
+                                        className="flex flex-col gap-3 rounded-lg border border-[#d1d5db] bg-white/60 p-3 sm:flex-row sm:items-start"
                                     >
                                         <Select
                                             value={row.product_id ? String(row.product_id) : undefined}
@@ -290,7 +290,7 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
                         </div>
                         {errors.productList && <p className="mt-2 text-sm text-danger">{errors.productList}</p>}
 
-                        <div className="mt-4 flex items-center justify-between rounded-lg border border-[#f0ddc8] bg-white/60 px-4 py-3">
+                        <div className="mt-4 flex items-center justify-between rounded-lg border border-[#d1d5db] bg-white/60 px-4 py-3">
                             <span className="text-sm font-medium text-ink">Expected Sales</span>
                             <span className="text-base font-semibold text-ink">₱{expectedTotal.toFixed(2)}</span>
                         </div>
@@ -365,14 +365,14 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
                             </div>
                         </div>
 
-                        <div className="mt-4 flex items-center justify-between rounded-lg border border-[#f0ddc8] bg-white/60 px-4 py-3">
+                        <div className="mt-4 flex items-center justify-between rounded-lg border border-[#d1d5db] bg-white/60 px-4 py-3">
                             <span className="text-sm font-medium text-ink">Total</span>
                             <span className="text-base font-semibold text-ink">₱{total_cash.toFixed(2)}</span>
                         </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex justify-end border-t border-[#f0ddc8] bg-white/60 px-6 py-4">
+                    <div className="flex justify-end border-t border-[#d1d5db] bg-white/60 px-6 py-4">
                         <Button type="submit" disabled={processing} className="bg-green-600 font-bold text-white hover:bg-green-700">
                             {processing ? 'Saving…' : 'Save Sale'}
                         </Button>

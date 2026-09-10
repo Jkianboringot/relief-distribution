@@ -40,7 +40,7 @@ interface PageProps {
 
 function SaleBranchBadge({ type }: { type: string }) {
     return (
-        <span className="inline-flex items-center rounded-full border border-brand-orange/40 bg-[#fbead9] px-3 py-0.5 text-xs font-medium capitalize text-[#7a3b12]">
+        <span className="inline-flex items-center rounded-full border border-brand-orange/40 bg-[#d1d5db]  px-3 py-0.5 text-xs font-medium capitalize text-[#7a3b12]">
             {type}
         </span>
     );
@@ -119,8 +119,8 @@ export default function Index() {
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
-                    <div className="flex items-center justify-end gap-3 border-b border-[#f0ddc8] px-5 py-3">
+                <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
+                    <div className="flex items-center justify-end gap-3 border-b border-[#d1d5db] px-5 py-3">
                         <div className="relative">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-orange" />
                             <Input
@@ -150,7 +150,7 @@ export default function Index() {
 
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-[#f0ddc8] bg-[#fbead9] hover:bg-[#fbead9]">
+                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Inventory#</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Branch</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Shift</TableHead>
@@ -172,7 +172,7 @@ export default function Index() {
                                 </TableRow>
                             )}
                             {sales.data.map((sale) => (
-                                <TableRow key={sale.id} className="border-b border-[#f0ddc8] last:border-0 hover:bg-[#fbf3e8]">
+                                <TableRow key={sale.id} className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] ">
                                     <TableCell className="font-medium text-[#7a3b12]">{sale.inventory}</TableCell>
                                     <TableCell className="font-medium text-[#7a3b12]">
                                         <SaleBranchBadge type={sale.branch} />
@@ -205,14 +205,14 @@ export default function Index() {
                     </Table>
 
                     {sales.links.length > 3 && (
-                        <div className="flex gap-1 border-t border-[#f0ddc8] px-5 py-3">
+                        <div className="flex gap-1 border-t border-[#d1d5db] px-5 py-3">
                             {sales.links.map((link, i) => (
                                 <Link
                                     key={i}
                                     href={link.url ?? '#'}
                                     className={`flex items-center rounded-md px-3 py-1 text-sm ${link.active
                                             ? 'bg-brand-orange text-white'
-                                            : 'text-brand-orange-hover hover:bg-[#fbead9]'
+                                            : 'text-brand-orange-hover hover:bg-[#d1d5db] '
                                         } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                 >
                                     {paginationLabel(link.label)}

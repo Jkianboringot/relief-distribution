@@ -82,9 +82,9 @@ export default function CreateIn({ branches, products, stockMovementTypes }: Pro
             </div>
 
             <form onSubmit={submit} className="w-full">
-                <div className="w-full overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
+                <div className="w-full overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
                     {/* Details */}
-                    <div className="border-b border-[#f0ddc8] p-6">
+                    <div className="border-b border-[#d1d5db] p-6">
                         <h2 className="mb-4 text-sm font-semibold text-ink">Details</h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
@@ -142,7 +142,7 @@ export default function CreateIn({ branches, products, stockMovementTypes }: Pro
                             {data.productList.map((row, i) => (
                                 <div
                                     key={i}
-                                    className="flex flex-col gap-3 rounded-lg border border-[#f0ddc8] bg-white/60 p-3 sm:flex-row sm:items-start"
+                                    className="flex flex-col gap-3 rounded-lg border border-[#d1d5db] bg-white/60 p-3 sm:flex-row sm:items-start"
                                 >
                                     <Select
                                         value={row.product_id ? String(row.product_id) : undefined}
@@ -188,7 +188,7 @@ export default function CreateIn({ branches, products, stockMovementTypes }: Pro
                     </div>
 
                     {/* Actions */}
-                    <div className="flex justify-end border-t border-[#f0ddc8] bg-white/60 px-6 py-4">
+                    <div className="flex justify-end border-t border-[#d1d5db] bg-white/60 px-6 py-4">
                         <Button type="submit" disabled={processing} className="bg-green-600 font-bold text-white hover:bg-green-700">
                             {processing ? 'Saving…' : 'Save Stock In'}
                         </Button>

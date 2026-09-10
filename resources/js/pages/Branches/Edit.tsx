@@ -61,7 +61,7 @@ export default function Edit({ branches, branch_types }: Props) {
 
                 <form
                     onSubmit={handleSubmit}
-                    className="space-y-4 rounded-xl border border-[#f0ddc8] bg-white p-5"
+                    className="space-y-4 rounded-xl border border-[#d1d5db] bg-white p-5"
                 >
                     {Object.keys(errors).length > 0 && (
                         <Alert variant="destructive">
@@ -136,7 +136,7 @@ export default function Edit({ branches, branch_types }: Props) {
                     </div>
 
 
-                    <div className="flex justify-end border-t border-[#f0ddc8] pt-3">
+                    <div className="flex justify-end border-t border-[#d1d5db] pt-3">
                         <Button
                             type="submit"
                             disabled={processing}

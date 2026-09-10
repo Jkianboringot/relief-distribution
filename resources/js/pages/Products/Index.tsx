@@ -111,8 +111,8 @@ export default function Index() {
                     </Link>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
-                    <div className="flex items-center justify-end gap-3 border-b border-[#f0ddc8] px-5 py-3">
+                <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
+                    <div className="flex items-center justify-end gap-3 border-b border-[#d1d5db] px-5 py-3">
                         <div className="relative">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-orange" />
                             <Input
@@ -143,7 +143,7 @@ export default function Index() {
 
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-[#f0ddc8] bg-[#fbead9] hover:bg-[#fbead9]">
+                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
                                 <TableHead className="font-bold text-brand-orange-hover">Name</TableHead>
                                 <TableHead className="text-center font-bold text-brand-orange-hover">Price</TableHead>
                                 <TableHead className="text-center font-bold text-brand-orange-hover">Cost</TableHead>
@@ -161,7 +161,7 @@ export default function Index() {
                             {products.data.map((product) => (
                                 <TableRow
                                     key={product.id}
-                                    className="border-b border-[#f0ddc8] last:border-0 hover:bg-[#fbf3e8]"
+                                    className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] "
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
                                         {product.name}
@@ -198,14 +198,14 @@ export default function Index() {
                     </Table>
 
                     {products.links.length > 3 && (
-                        <div className="flex gap-1 border-t border-[#f0ddc8] px-5 py-3">
+                        <div className="flex gap-1 border-t border-[#d1d5db] px-5 py-3">
                             {products.links.map((link, i) => (
                                 <Link
                                     key={i}
                                     href={link.url ?? '#'}
                                     className={`flex items-center rounded-md px-3 py-1 text-sm ${link.active
                                         ? 'bg-brand-orange text-white'
-                                        : 'text-brand-orange-hover hover:bg-[#fbead9]'
+                                        : 'text-brand-orange-hover hover:bg-[#d1d5db] '
                                         } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                 >
                                     {paginationLabel(link.label)}
