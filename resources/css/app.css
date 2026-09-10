@@ -131,8 +131,8 @@
     --sidebar-foreground: #9a9ba8;      /* muted gray for inactive nav items */
     --sidebar-primary: #2f6fed;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #2f6fed;          /* active item background = solid blue pill */
-    --sidebar-accent-foreground: #ffffff;
+    --sidebar-accent: #d1d5db;          /* active item background = solid blue pill */
+    --sidebar-accent-foreground: #1a1a1a;
     --sidebar-border: #2a2a30;
     --sidebar-ring: #2f6fed;
 }
