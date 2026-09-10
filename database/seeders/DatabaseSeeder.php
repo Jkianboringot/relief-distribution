@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Barangay;
 use App\Models\User;
 use Hash;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -18,14 +19,9 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call([
-            CategorySeeder::class,
-            ProductSeeder::class,
+            BarangaySeeder::class,
 
-            barangaySeeder::class,
-            // EmployeeSeeder::class,
             UserSeeder::class,
-            InventorySeeder::class,
-            // SaleSeeder::class,
             ]
         );
     

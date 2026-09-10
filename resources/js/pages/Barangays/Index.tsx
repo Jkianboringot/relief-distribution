@@ -16,11 +16,8 @@ import FlashAlerts from '@/components/flash-alerts';
 
 interface barangay {
     id: number;
-    location: string;
+    code: string;
     name: string;
-    barangay_type: string;
-    products_count: number;
-    total_sales: number;
 }
 
 interface Paginatedbarangays {
@@ -37,7 +34,7 @@ interface PageProps {
     };
 }
 
-function barangayTypeBadge({ type }: { type: string }) {
+function BarangayTypeBadge({ type }: { type: string }) {
     return (
         <span className="inline-flex items-center rounded-full border border-brand-orange/40 bg-[#d1d5db]  px-3 py-0.5 text-xs font-medium capitalize text-[#7a3b12]">
             {type}
@@ -118,7 +115,7 @@ export default function Index() {
                                 placeholder="Search"
                                 className="w-56 border-brand-orange/40 bg-white pl-9 text-sm"
                             />
-                              {search.length >= 100 && (
+                            {search.length >= 100 && (
 
                                 <p className="absolute left-0 top-full mb-10 text-xs text-danger">
                                     Search can't be longer than 100 characters.
@@ -141,20 +138,12 @@ export default function Index() {
                         <TableHeader>
                             <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">
+                                    Code
+                                </TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
                                     Name
                                 </TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    LOCATION
-                                </TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    barangay TYPE
-                                </TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    PRODUCTS
-                                </TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    SALES
-                                </TableHead>
+
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -172,18 +161,12 @@ export default function Index() {
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] "
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
+                                        {barangay.code}
+                                    </TableCell>
+                                   <TableCell className="font-medium text-[#7a3b12]">
                                         {barangay.name}
                                     </TableCell>
-                                    <TableCell className="font-medium text-[#7a3b12]">
-                                        {barangay.location}
-                                    </TableCell>
-                                    <TableCell>
-                                        <barangayTypeBadge type={barangay.barangay_type} />
-                                    </TableCell>
-                                    <TableCell>{barangay.products_count}</TableCell>
-                                    <TableCell className="text-right font-medium text-[#7a3b12]">
-                                        {barangay.total_sales !== null ? `₱${barangay.total_sales}` : '—'}
-                                    </TableCell>
+                                  
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <Link
@@ -203,7 +186,7 @@ export default function Index() {
                                             <button
                                                 type="button"
                                                 disabled={processing}
-                                                onClick={() => handleDelete(barangay.id, barangay.location)}
+                                                onClick={() => handleDelete(barangay.id, barangay.name)}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"
                                             >
                                                 <Trash2 className="h-4 w-4" />

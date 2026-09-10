@@ -22,26 +22,26 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-     {
-        title: 'Product',
-        href: '/products',
-        icon: Package,
-    },
-    {
-        title: 'Inventory',
-        href: '/inventories',
-        icon: Boxes,
-    },
+    //  {
+    //     title: 'Product',
+    //     href: '/products',
+    //     icon: Package,
+    // },
+    // {
+    //     title: 'Inventory',
+    //     href: '/inventories',
+    //     icon: Boxes,
+    // },
      {
         title: 'barangay',
         href: '/barangays',
         icon: Building2,
     },
-     {
-        title: 'Sale',
-        href: '/sales',
-        icon: ShoppingCart,
-    },
+    //  {
+    //     title: 'Sale',
+    //     href: '/sales',
+    //     icon: ShoppingCart,
+    // },
 ];
 // const footerNavItems: NavItem[] = [
 //     {

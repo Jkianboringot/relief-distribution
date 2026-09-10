@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-class barangayRequest extends FormRequest
+class BarangayRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,8 +27,7 @@ class barangayRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:75', 'min:3', Rule::unique('barangays', 'name')->ignore($this->route('barangay'))],
-            'location' => ['nullable', 'string', 'max:100', 'min:3'],
-            'barangay_type' => ['required', new Enum(barangayType::class)],
+            'code' => ['required', 'string', 'max:12', 'min:3', Rule::unique('barangays', 'name')->ignore($this->route('barangay'))],
         ];
     }
 }

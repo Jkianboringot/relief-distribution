@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => Hash
             ::make('123'),
-            // 'barangay_id'=>1
+            'barangay_id'=>1
             
         ]);
     }   

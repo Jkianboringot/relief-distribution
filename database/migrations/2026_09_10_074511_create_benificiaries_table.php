@@ -18,6 +18,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
+                // TODO index firstname and lastname if not what is the point of doing it like that
             $table->string('first_name');
             $table->string('middle_name')->nullable();
             $table->string('last_name');

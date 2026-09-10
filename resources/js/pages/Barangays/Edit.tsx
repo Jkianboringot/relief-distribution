@@ -11,10 +11,8 @@ import FlashAlerts from '@/components/flash-alerts';
 interface barangay {
     id: number;
     name: string;
-    location: string | '';
+    code: string;
 
-    // HACK - make this enum interface
-    barangay_type: string;
 }
 
 interface SelectOption {
@@ -24,19 +22,17 @@ interface SelectOption {
 
 
 interface Props {
-    barangay_types: SelectOption[];
     barangays: barangay;
 }
 
 
 
 
-export default function Edit({ barangays, barangay_types }: Props) {
+export default function Edit({ barangays }: Props) {
     // HACK - useForm should have type
     const { data, setData, put, processing, errors } = useForm({
         name: barangays.name,
-        location: barangays?.location,
-        barangay_type: barangays.barangay_type,
+        code: barangays.code,
     });
       const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
 
@@ -81,12 +77,12 @@ export default function Edit({ barangays, barangay_types }: Props) {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="name" className="font-semibold text-ink">
-                                barangay Name
+                                Barangay Name
                             </Label>
                             <Input
                                 id="name"
                                 type='text'
-                                placeholder="barangay name"
+                                placeholder="Barangay name"
                                 value={data.name}
                                 minLength={3}
                                 maxLength={75}
@@ -96,45 +92,26 @@ export default function Edit({ barangays, barangay_types }: Props) {
                             {errors.name && <p className="mt-1.5 text-sm text-danger">{errors.name}</p>}
 
                         </div>
-
-                        <div className="space-y-1">
-                            <Label htmlFor="location" className="font-semibold text-ink">
-                                barangay Location
+                         <div className="space-y-1">
+                            <Label htmlFor="code" className="font-semibold text-ink">
+                                Barangay Code
                             </Label>
                             <Input
-                                id="location"
+                                id="code"
                                 type='text'
-                                placeholder="barangay location"
-                                value={data.location}
+                                placeholder="Code"
+                                value={data.code}
                                 minLength={3}
-                                maxLength={100}
-                                onChange={(e) => setData('location', e.target.value)}
+                                maxLength={75}
+                                onChange={(e) => setData('code', e.target.value)}
                                 className="border-[#e0d0c0]"
                             />
-                            {errors.location && <p className="mt-1.5 text-sm text-danger">{errors.location}</p>}
+                            {errors.code && <p className="mt-1.5 text-sm text-danger">{errors.code}</p>}
 
                         </div>
+                        </div>
 
-
-                    </div>
-
-                    <div>
-                        <Label htmlFor="barangay_type">barangay Type</Label>
-                        <Select value={data.barangay_type || undefined} onValueChange={(value) => setData('barangay_type', value)}>
-                            <SelectTrigger id="barangay_type" className="mt-1.5 w-full bg-white sm:max-w-xs">
-                                <SelectValue placeholder="Select barangay type…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {barangay_types.map((v) => (
-                                    <SelectItem key={v.value} value={v.value}>
-                                        {v.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.barangay_type && <p className="mt-1.5 text-sm text-danger">{errors.barangay_type}</p>}
-                    </div>
-
+                       
 
                     <div className="flex justify-end border-t border-[#d1d5db] pt-3">
                         <Button

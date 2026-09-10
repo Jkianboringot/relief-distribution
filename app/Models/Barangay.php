@@ -2,49 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Barangay extends Model
 {
-  protected $fillable = ['name','location', 'type_barangay'];
-
-
-  // public function ingredients(): BelongsToMany
-  // {
-  //   return $this->belongsToMany(Ingredient::class, 'ingredient_barangays');
-  // }
-
-protected $casts = [
-    'total_sales' => 'float',
-];
-
-  public function inventories(): HasMany
-  {
-    return $this->hasMany(Inventory::class);
-  }
-  
-
-  
-  public function reuturned(): HasMany
-  {
-    return $this->hasMany(Returned::class);
-  }
-  public function users(): HasMany
-  {
-    return $this->hasMany(User::class);
-  }
-
-  public function products(): BelongsToMany
-  {
-    return $this->belongsToMany(Product::class)
-      ->withPivot('quantity');
-  }
-
-  public function sales(){
-    return $this->hasMany(Sale::class);
-  }
+  use HasFactory;
+  protected $fillable = ['name', 'code'];
 
 
 
