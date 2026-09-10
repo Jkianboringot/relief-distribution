@@ -11,25 +11,25 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Box, ChevronLeft, ChevronRight, Pencil, Search, Trash2, X } from 'lucide-react';
-import { deleteMethod, index as branchesIndex, products, edit, index } from '@/routes/branches';
+import { deleteMethod, index as barangaysIndex, products, edit, index } from '@/routes/barangays';
 import FlashAlerts from '@/components/flash-alerts';
 
-interface Branch {
+interface barangay {
     id: number;
     location: string;
     name: string;
-    branch_type: string;
+    barangay_type: string;
     products_count: number;
     total_sales: number;
 }
 
-interface PaginatedBranches {
-    data: Branch[];
+interface Paginatedbarangays {
+    data: barangay[];
     links: { url: string | null; label: string; active: boolean }[];
 }
 
 interface PageProps {
-    branches: PaginatedBranches;
+    barangays: Paginatedbarangays;
     filters: { search?: string };
     flash: {
         message?: string;
@@ -37,7 +37,7 @@ interface PageProps {
     };
 }
 
-function BranchTypeBadge({ type }: { type: string }) {
+function barangayTypeBadge({ type }: { type: string }) {
     return (
         <span className="inline-flex items-center rounded-full border border-brand-orange/40 bg-[#d1d5db]  px-3 py-0.5 text-xs font-medium capitalize text-[#7a3b12]">
             {type}
@@ -54,7 +54,7 @@ function paginationLabel(label: string) {
 }
 
 export default function Index() {
-    const { flash, branches, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
+    const { flash, barangays, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
     const { processing, delete: destroyForm } = useForm();
     const [search, setSearch] = useState(filters?.search ?? '');
 
@@ -69,7 +69,7 @@ export default function Index() {
 
         const timeout = setTimeout(() => {
             router.get(
-                branchesIndex().url,
+                barangaysIndex().url,
                 { search },
                 { preserveState: true, replace: true },
             );
@@ -92,18 +92,18 @@ export default function Index() {
 
     return (
         <>
-            <Head title="Branches" />
+            <Head title="barangays" />
 
             <div className="p-6">
                 <FlashAlerts flash={flash} />
 
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
-                        Branches
+                        barangays
                     </h1>
-                    <Link href={'/branches/create'}>
+                    <Link href={'/barangays/create'}>
                         <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New branch
+                            New barangay
                         </Button>
                     </Link>
                 </div>
@@ -147,7 +147,7 @@ export default function Index() {
                                     LOCATION
                                 </TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    BRANCH TYPE
+                                    barangay TYPE
                                 </TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">
                                     PRODUCTS
@@ -159,42 +159,42 @@ export default function Index() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {branches.data.length === 0 && (
+                            {barangays.data.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={6} className="py-10 text-center text-sm text-subtle">
-                                        No branches found.
+                                        No barangays found.
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {branches.data.map((branch) => (
+                            {barangays.data.map((barangay) => (
                                 <TableRow
-                                    key={branch.id}
+                                    key={barangay.id}
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] "
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        {branch.name}
+                                        {barangay.name}
                                     </TableCell>
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        {branch.location}
+                                        {barangay.location}
                                     </TableCell>
                                     <TableCell>
-                                        <BranchTypeBadge type={branch.branch_type} />
+                                        <barangayTypeBadge type={barangay.barangay_type} />
                                     </TableCell>
-                                    <TableCell>{branch.products_count}</TableCell>
+                                    <TableCell>{barangay.products_count}</TableCell>
                                     <TableCell className="text-right font-medium text-[#7a3b12]">
-                                        {branch.total_sales !== null ? `₱${branch.total_sales}` : '—'}
+                                        {barangay.total_sales !== null ? `₱${barangay.total_sales}` : '—'}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <Link
-                                                href={products(branch.id).url}
+                                                href={products(barangay.id).url}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
                                             >
                                                 <Box className="h-4 w-4" />
                                                 View Products
                                             </Link>
                                             <Link
-                                                href={edit(branch.id).url}
+                                                href={edit(barangay.id).url}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
                                             >
                                                 <Pencil className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function Index() {
                                             <button
                                                 type="button"
                                                 disabled={processing}
-                                                onClick={() => handleDelete(branch.id, branch.location)}
+                                                onClick={() => handleDelete(barangay.id, barangay.location)}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -216,9 +216,9 @@ export default function Index() {
                         </TableBody>
                     </Table>
 
-                    {branches.links.length > 3 && (
+                    {barangays.links.length > 3 && (
                         <div className="flex gap-1 border-t border-[#d1d5db] px-5 py-3">
-                            {branches.links.map((link, i) => (
+                            {barangays.links.map((link, i) => (
                                 <Link
                                     key={i}
                                     href={link.url ?? '#'}
@@ -241,8 +241,8 @@ export default function Index() {
 Index.layout = {
     breadcrumbs: [
         {
-            title: 'Branches',
-            href: '/branches',
+            title: 'barangays',
+            href: '/barangays',
         },
     ],
 };

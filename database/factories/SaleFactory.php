@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\Shift;
-use App\Models\Branch;
+use App\Models\barangay;
 use App\Models\Inventory;
 use App\Models\Sale;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -15,7 +15,7 @@ class SaleFactory extends Factory
     public function definition(): array
     {
         return [
-            'branch_id' => 1,
+            'barangay_id' => 1,
             'inventory_id' => 1,
 
             'shift' => fake()->randomElement([

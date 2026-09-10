@@ -14,8 +14,8 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_id')->constrained();//already index, we only create another index if            
-            //we are doing a where with branch shift for example, if we are doing that alot, not speculation
+            $table->foreignId('barangay_id')->constrained();//already index, we only create another index if            
+            //we are doing a where with barangay shift for example, if we are doing that alot, not speculation
 
             //NEWLY-ADDED - i added unique because i want one inventory to have one sale, but am total sure about this in the future
             //but as of now i am

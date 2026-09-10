@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AddIngredient;
-use App\Models\Branch;
+use App\Models\barangay;
 use App\Models\Ingredient;
 use App\Models\Product;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;

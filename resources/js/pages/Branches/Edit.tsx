@@ -4,17 +4,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CircleAlert } from 'lucide-react';
-import { update } from '@/routes/branches';
+import { update } from '@/routes/barangays';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FlashAlerts from '@/components/flash-alerts';
 
-interface Branch {
+interface barangay {
     id: number;
     name: string;
     location: string | '';
 
     // HACK - make this enum interface
-    branch_type: string;
+    barangay_type: string;
 }
 
 interface SelectOption {
@@ -24,37 +24,37 @@ interface SelectOption {
 
 
 interface Props {
-    branch_types: SelectOption[];
-    branches: Branch;
+    barangay_types: SelectOption[];
+    barangays: barangay;
 }
 
 
 
 
-export default function Edit({ branches, branch_types }: Props) {
+export default function Edit({ barangays, barangay_types }: Props) {
     // HACK - useForm should have type
     const { data, setData, put, processing, errors } = useForm({
-        name: branches.name,
-        location: branches?.location,
-        branch_type: branches.branch_type,
+        name: barangays.name,
+        location: barangays?.location,
+        barangay_type: barangays.barangay_type,
     });
       const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(update(branches.id).url);
+        put(update(barangays.id).url);
     };
 
     return (
         <>
-            <Head title="Edit Branch" />
+            <Head title="Edit barangay" />
 
             <div className="mx-auto w-full  max-w-4xl p-6">
                  <FlashAlerts flash={flash} />
                 <div className="mb-4">
                     <h1 className="text-2xl font-bold text-ink">Edit Product</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Update details for "{branches.name}".
+                        Update details for "{barangays.name}".
                     </p>
                 </div>
 
@@ -81,12 +81,12 @@ export default function Edit({ branches, branch_types }: Props) {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="name" className="font-semibold text-ink">
-                                Branch Name
+                                barangay Name
                             </Label>
                             <Input
                                 id="name"
                                 type='text'
-                                placeholder="Branch name"
+                                placeholder="barangay name"
                                 value={data.name}
                                 minLength={3}
                                 maxLength={75}
@@ -99,12 +99,12 @@ export default function Edit({ branches, branch_types }: Props) {
 
                         <div className="space-y-1">
                             <Label htmlFor="location" className="font-semibold text-ink">
-                                Branch Location
+                                barangay Location
                             </Label>
                             <Input
                                 id="location"
                                 type='text'
-                                placeholder="Branch location"
+                                placeholder="barangay location"
                                 value={data.location}
                                 minLength={3}
                                 maxLength={100}
@@ -119,20 +119,20 @@ export default function Edit({ branches, branch_types }: Props) {
                     </div>
 
                     <div>
-                        <Label htmlFor="branch_type">Branch Type</Label>
-                        <Select value={data.branch_type || undefined} onValueChange={(value) => setData('branch_type', value)}>
-                            <SelectTrigger id="branch_type" className="mt-1.5 w-full bg-white sm:max-w-xs">
-                                <SelectValue placeholder="Select branch type…" />
+                        <Label htmlFor="barangay_type">barangay Type</Label>
+                        <Select value={data.barangay_type || undefined} onValueChange={(value) => setData('barangay_type', value)}>
+                            <SelectTrigger id="barangay_type" className="mt-1.5 w-full bg-white sm:max-w-xs">
+                                <SelectValue placeholder="Select barangay type…" />
                             </SelectTrigger>
                             <SelectContent>
-                                {branch_types.map((v) => (
+                                {barangay_types.map((v) => (
                                     <SelectItem key={v.value} value={v.value}>
                                         {v.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.branch_type && <p className="mt-1.5 text-sm text-danger">{errors.branch_type}</p>}
+                        {errors.barangay_type && <p className="mt-1.5 text-sm text-danger">{errors.barangay_type}</p>}
                     </div>
 
 
@@ -142,7 +142,7 @@ export default function Edit({ branches, branch_types }: Props) {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Save Branch
+                            Save barangay
                         </Button>
                     </div>
                 </form>
@@ -154,7 +154,7 @@ export default function Edit({ branches, branch_types }: Props) {
 Edit.layout = {
     breadcrumbs: [
         {
-            title: 'Edit  Branch',
+            title: 'Edit  barangay',
         },
     ],
 };

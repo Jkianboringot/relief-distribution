@@ -17,11 +17,11 @@ import FlashAlerts from '@/components/flash-alerts';
 interface Product {
     id: number;
     name: string;
-    quantity: number; // stock on hand at this branch
+    quantity: number; // stock on hand at this barangay
     price: number;    // NEW — needed to auto-calculate expected sales; backend must include this
 }
 
-interface Branch {
+interface barangay {
     id: number;
     location: string;
     products: Product[];
@@ -38,16 +38,16 @@ interface SelectOption {
 }
 
 interface Props {
-    branches: Branch[];
+    barangays: barangay[];
     stockMovementTypes: SelectOption[];
     shifts: SelectOption[];
 }
 
-export default function CreateOut({ branches, stockMovementTypes, shifts }: Props) {
+export default function CreateOut({ barangays, stockMovementTypes, shifts }: Props) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
 
     const { data, setData, post, processing, errors } = useForm<{
-        branch_id: number | '';
+        barangay_id: number | '';
         productList: ProductRow[];
         shift: string;
         stock_movement_type: string | null;
@@ -58,7 +58,7 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
         remitted_expenses: number | '';
         net_cash: number|'';
     }>({
-        branch_id: '',
+        barangay_id: '',
         productList: [{ product_id: '', quantity: 1 }],
         shift: '',
         stock_movement_type: '',
@@ -70,23 +70,23 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
         net_cash: '',
     });
 
-    const selectedBranch = useMemo(
-        () => branches.find((b) => b.id === data.branch_id),
-        [branches, data.branch_id],
+    const selectedbarangay = useMemo(
+        () => barangays.find((b) => b.id === data.barangay_id),
+        [barangays, data.barangay_id],
     );
 
     // Expected sales — sum of (product price × quantity sold) across every
     // row. This is "what you should have on hand" based on what left stock.
     const expectedTotal = useMemo(() => {
-        if (!selectedBranch) return 0;
+        if (!selectedbarangay) return 0;
 
         return data.productList.reduce((sum, row) => {
             if (row.product_id === '') return sum;
-            const product = selectedBranch.products.find((p) => p.id === row.product_id);
+            const product = selectedbarangay.products.find((p) => p.id === row.product_id);
             if (!product) return sum;
             return sum + product.price * Number(row.quantity || 0);
         }, 0);
-    }, [data.productList, selectedBranch]);
+    }, [data.productList, selectedbarangay]);
 
     // Total / net_cash — plain sum of everything actually collected.
     // No shortage folded in here; this reacts to every field as expected.
@@ -107,10 +107,10 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
         [expectedTotal, total_cash],
     );
 
-    function handleBranchChange(branchId: number) {
+    function handlebarangayChange(barangayId: number) {
         setData((prev) => ({
             ...prev,
-            branch_id: branchId,
+            barangay_id: barangayId,
             productList: [{ product_id: '', quantity: 1 }],
         }));
     }
@@ -133,13 +133,13 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
     }
 
     function stockFor(productId: number | ''): number | null {
-        if (productId === '' || !selectedBranch) return null;
-        return selectedBranch.products.find((p) => p.id === productId)?.quantity ?? 0;
+        if (productId === '' || !selectedbarangay) return null;
+        return selectedbarangay.products.find((p) => p.id === productId)?.quantity ?? 0;
     }
 
     function priceFor(productId: number | ''): number | null {
-        if (productId === '' || !selectedBranch) return null;
-        return selectedBranch.products.find((p) => p.id === productId)?.price ?? null;
+        if (productId === '' || !selectedbarangay) return null;
+        return selectedbarangay.products.find((p) => p.id === productId)?.price ?? null;
     }
 
     // ids already picked in other rows, so the same product can't be
@@ -178,25 +178,25 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
 
             <form onSubmit={submit} className="w-full">
                 <div className="w-full overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
-                    {/* Branch */}
+                    {/* barangay */}
                     <div className="border-b border-[#d1d5db] p-6">
-                        <h2 className="mb-4 text-sm font-semibold text-ink">Branch</h2>
+                        <h2 className="mb-4 text-sm font-semibold text-ink">barangay</h2>
                         <Select
-                            value={data.branch_id ? String(data.branch_id) : undefined}
-                            onValueChange={(value) => handleBranchChange(Number(value))}
+                            value={data.barangay_id ? String(data.barangay_id) : undefined}
+                            onValueChange={(value) => handlebarangayChange(Number(value))}
                         >
                             <SelectTrigger className="w-full bg-white">
-                                <SelectValue placeholder="Select a branch…" />
+                                <SelectValue placeholder="Select a barangay…" />
                             </SelectTrigger>
                             <SelectContent>
-                                {branches.map((b) => (
+                                {barangays.map((b) => (
                                     <SelectItem key={b.id} value={String(b.id)}>
                                         {b.location}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.branch_id && <p className="mt-1.5 text-sm text-danger">{errors.branch_id}</p>}
+                        {errors.barangay_id && <p className="mt-1.5 text-sm text-danger">{errors.barangay_id}</p>}
                     </div>
 
                     {/* Products sold */}
@@ -208,14 +208,14 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
                                 variant="ghost"
                                 size="sm"
                                 onClick={addRow}
-                                disabled={!selectedBranch}
+                                disabled={!selectedbarangay}
                                 className="text-brand-orange hover:text-brand-orange-hover disabled:opacity-40"
                             >
                                 <Plus className="h-4 w-4" />
                                 Add Product
                             </Button>
                         </div>
-                        <p className="mb-4 text-xs text-subtle">Only products already stocked at the selected branch can be sold.</p>
+                        <p className="mb-4 text-xs text-subtle">Only products already stocked at the selected barangay can be sold.</p>
 
                         <div className="space-y-3">
                             {data.productList.map((row, i) => {
@@ -231,16 +231,16 @@ export default function CreateOut({ branches, stockMovementTypes, shifts }: Prop
                                     >
                                         <Select
                                             value={row.product_id ? String(row.product_id) : undefined}
-                                            disabled={!selectedBranch}
+                                            disabled={!selectedbarangay}
                                             onValueChange={(value) => updateRow(i, 'product_id', Number(value))}
                                         >
                                             <SelectTrigger className="flex-1 bg-white">
                                                 <SelectValue
-                                                    placeholder={selectedBranch ? 'Select product…' : 'Select a branch first…'}
+                                                    placeholder={selectedbarangay ? 'Select product…' : 'Select a barangay first…'}
                                                 />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {selectedBranch?.products
+                                                {selectedbarangay?.products
                                                     .filter((p) => !excluded.includes(p.id))
                                                     .map((p) => (
                                                         <SelectItem key={p.id} value={String(p.id)}>

@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\BranchController;
+use App\Http\Controllers\barangayController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
-use App\Models\Branch;
+use App\Models\barangay;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', 'dashboard')->name('home');
@@ -53,24 +53,24 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
         }
     );
 
-    Route::prefix('branches')->name('branches.')->group(
+    Route::prefix('barangays')->name('barangays.')->group(
         function () {
-            Route::get('/', [BranchController::class, 'index'])
+            Route::get('/', [barangayController::class, 'index'])
                 ->name('index');
 
             // this is for productVIew
-            Route::get('/{branch}/products', [BranchController::class, 'products'])
+            Route::get('/{barangay}/products', [barangayController::class, 'products'])
                 ->name('products');
 
 
-            Route::get('/create', [BranchController::class, 'create'])->name('create');
-            Route::post('/', [BranchController::class, 'store'])->name('store');
+            Route::get('/create', [barangayController::class, 'create'])->name('create');
+            Route::post('/', [barangayController::class, 'store'])->name('store');
 
             // just call ui
-            Route::get('/{branch}/edit', [BranchController::class, 'edit'])->name('edit');
-            Route::put('/{branch}', [BranchController::class, 'update'])->name('update');
+            Route::get('/{barangay}/edit', [barangayController::class, 'edit'])->name('edit');
+            Route::put('/{barangay}', [barangayController::class, 'update'])->name('update');
 
-            Route::delete('/{branch}', [BranchController::class, 'delete'])->name('delete');
+            Route::delete('/{barangay}', [barangayController::class, 'delete'])->name('delete');
 
 
         }

@@ -116,9 +116,9 @@ class Ingredient extends Model
 */
     }
 
-    function getBranchIngredientStockAttribute()
+    function getbarangayIngredientStockAttribute()
     {
-        return ($this->addIngredients()->where('branch_id',Auth::user()->branch_id)->value('add_to_ingredient.quantity') ?? 0)
+        return ($this->addIngredients()->where('barangay_id',Auth::user()->barangay_id)->value('add_to_ingredient.quantity') ?? 0)
             + $this->returns()
             - $this->sold();
 

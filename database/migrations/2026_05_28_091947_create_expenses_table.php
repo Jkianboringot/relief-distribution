@@ -18,7 +18,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->decimal('amount');
-            $table->string('expense_category',40)->default(ExpenseCategory::Branch->value);
+            $table->string('expense_category',40)->default(ExpenseCategory::barangay->value);
             $table->string('expense_type',40)->default(ExpenseType::Utilities->value);
             $table->string('payment_method',40)->default(PaymentMethod::Cash->value);
             $table->text('description'); //what is the point of this

@@ -9,9 +9,9 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft } from 'lucide-react';
-import { index } from '@/routes/branches';
+import { index } from '@/routes/barangays';
 
-interface BranchProduct {
+interface barangayProduct {
     id: number;
     name: string;
     pivot: {
@@ -36,17 +36,17 @@ interface Paginated<T> {
 }
 
 interface Props {
-    branch: {
+    barangay: {
         id: number;
         location: string;
     };
-    products: Paginated<BranchProduct>;
+    products: Paginated<barangayProduct>;
 }
 
-export default function BranchProducts({ branch, products }: Props) {
+export default function barangayProducts({ barangay, products }: Props) {
     return (
         <>
-            <Head title={`Products at ${branch.location}`} />
+            <Head title={`Products at ${barangay.location}`} />
 
             <div className="p-6">
                 <div className="mb-6 flex items-center justify-between">
@@ -56,10 +56,10 @@ export default function BranchProducts({ branch, products }: Props) {
                             className="mb-1 flex items-center gap-1 text-sm font-medium text-subtle hover:text-brand-orange"
                         >
                             <ArrowLeft className="h-3.5 w-3.5" />
-                            Back to Branches
+                            Back to barangays
                         </Link>
                         <h1 className="text-3xl font-extrabold tracking-tight text-ink">
-                            Products at {branch.location}
+                            Products at {barangay.location}
                         </h1>
                     </div>
                 </div>
@@ -80,7 +80,7 @@ export default function BranchProducts({ branch, products }: Props) {
                             {products.data.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={2} className="py-10 text-center text-sm text-subtle">
-                                        This branch has no products yet.
+                                        This barangay has no products yet.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -128,8 +128,8 @@ export default function BranchProducts({ branch, products }: Props) {
     );
 }
 
-BranchProducts.layout = {
+barangayProducts.layout = {
     breadcrumbs: [
-        { title: 'Branches Produce', href: '/branches' },
+        { title: 'barangays Produce', href: '/barangays' },
     ],
 };

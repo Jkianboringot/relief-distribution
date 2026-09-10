@@ -18,13 +18,13 @@ return new class extends Migration {
             //TODO - ondelete
             //will put this on null for now , to show client shit
             $table->foreignId('encoder_id')->constrained('users');
-            $table->foreignId('branch_id')->constrained();
+            $table->foreignId('barangay_id')->constrained();
 
             //WHY  Okay, I'm here to explain why I'm adding stock_movement_id to the inventory table. The way it would work is that we first create the stock movement so that we can get its ID, which we can then put into the inventory table.
 
-            // Now, why is this bad? It's because of the way stock movements work. A stock movement holds the branch_id, product_id, and its quantity, so it is pretty much unique. For example, let's say a branch has 10 products. That would mean we have 10 stock movement records, one for each product.
+            // Now, why is this bad? It's because of the way stock movements work. A stock movement holds the barangay_id, product_id, and its quantity, so it is pretty much unique. For example, let's say a barangay has 10 products. That would mean we have 10 stock movement records, one for each product.
 
-            // Now I want you to imagine something similar with inventory records. Let's say we have a branch and we add five products. That would mean we need to have at least five inventory records, and the only difference between them would be the stock_movement_id. The inventory records are pretty much dependent on that ID alone. It is normalized, but it is probably not the best way.
+            // Now I want you to imagine something similar with inventory records. Let's say we have a barangay and we add five products. That would mean we need to have at least five inventory records, and the only difference between them would be the stock_movement_id. The inventory records are pretty much dependent on that ID alone. It is normalized, but it is probably not the best way.
 
             // Part of the whole point of normalization is to remove unnecessary repetition. However, there is also another problem, and that is that we need a way to know whether the updated stock is actually correct. A discrepancy can happen. It's not super common, but it is possible.
 

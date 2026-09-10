@@ -16,7 +16,7 @@ import { index } from '@/routes/sales';
 interface Sale {
     id: number;
     inventory: string | null;
-    branch: string;
+    barangay: string;
     shift: string;
     cash_advance: number | null;
     cash_shortage: number | null;
@@ -38,7 +38,7 @@ interface PageProps {
     flash?: { success?: string; error?: string };
 }
 
-function SaleBranchBadge({ type }: { type: string }) {
+function SalebarangayBadge({ type }: { type: string }) {
     return (
         <span className="inline-flex items-center rounded-full border border-brand-orange/40 bg-[#d1d5db]  px-3 py-0.5 text-xs font-medium capitalize text-[#7a3b12]">
             {type}
@@ -152,7 +152,7 @@ export default function Index() {
                         <TableHeader>
                             <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Inventory#</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Branch</TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">barangay</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Shift</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Cash on Hand</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Gcash Amount</TableHead>
@@ -175,7 +175,7 @@ export default function Index() {
                                 <TableRow key={sale.id} className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] ">
                                     <TableCell className="font-medium text-[#7a3b12]">{sale.inventory}</TableCell>
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        <SaleBranchBadge type={sale.branch} />
+                                        <SalebarangayBadge type={sale.barangay} />
                                     </TableCell>
                                     <TableCell>
                                         <InOutTypeBadge type={sale.shift} />

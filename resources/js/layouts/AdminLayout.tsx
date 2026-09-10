@@ -5,7 +5,7 @@ import { PropsWithChildren } from 'react';
 const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Sales', href: '/sales', icon: ShoppingCart },
-    { label: 'Branches', href: '/branches', icon: Map },
+    { label: 'barangays', href: '/barangays', icon: Map },
     { label: 'Products', href: '/products', icon: Package },
     { label: 'Inventories', href: '/inventories', icon: ClipboardList },
 ];

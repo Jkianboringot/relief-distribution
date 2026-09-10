@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { dashboard } from '@/routes';
 
-interface BranchSale {
+interface barangaySale {
     id: number;
     location: string;
     total_sale: number;
@@ -10,12 +10,12 @@ interface BranchSale {
 
 interface Props {
     overallTotal: number;
-    branchSales: BranchSale[];
+    barangaySales: barangaySale[];
 }
 
-export default function Dashboard({ overallTotal, branchSales }: Props) {
-    const topBranch = branchSales[0];
-    const totalTransactions = branchSales.reduce((sum, b) => sum + b.sale_count, 0);
+export default function Dashboard({ overallTotal, barangaySales }: Props) {
+    const topbarangay = barangaySales[0];
+    const totalTransactions = barangaySales.reduce((sum, b) => sum + b.sale_count, 0);
 
     return (
         <>
@@ -24,35 +24,35 @@ export default function Dashboard({ overallTotal, branchSales }: Props) {
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <SummaryCard label="Overall Total Sales" value={`₱${overallTotal.toFixed(2)}`} />
                     <SummaryCard
-                        label="Top Branch"
-                        value={topBranch ? topBranch.location : '—'}
-                        sub={topBranch ? `₱${topBranch.total_sale.toFixed(2)}` : undefined}
+                        label="Top barangay"
+                        value={topbarangay ? topbarangay.location : '—'}
+                        sub={topbarangay ? `₱${topbarangay.total_sale.toFixed(2)}` : undefined}
                     />
                     <SummaryCard label="Total Transactions" value={String(totalTransactions)} />
                 </div>
 
                 <div className="relative flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     <div className="p-6">
-                        <h2 className="mb-4 text-sm font-semibold text-ink">Sales by Branch</h2>
+                        <h2 className="mb-4 text-sm font-semibold text-ink">Sales by barangay</h2>
                         <div className="space-y-3">
-                            {branchSales.map((branch) => {
-                                const pct = overallTotal > 0 ? (branch.total_sale / overallTotal) * 100 : 0;
+                            {barangaySales.map((barangay) => {
+                                const pct = overallTotal > 0 ? (barangay.total_sale / overallTotal) * 100 : 0;
                                 return (
-                                    <div key={branch.id} className="rounded-lg border border-[#d1d5db] bg-white/60 p-4">
+                                    <div key={barangay.id} className="rounded-lg border border-[#d1d5db] bg-white/60 p-4">
                                         <div className="mb-2 flex items-center justify-between">
-                                            <span className="text-sm font-medium text-ink">{branch.location}</span>
-                                            <span className="text-sm font-semibold text-ink">₱{branch.total_sale.toFixed(2)}</span>
+                                            <span className="text-sm font-medium text-ink">{barangay.location}</span>
+                                            <span className="text-sm font-semibold text-ink">₱{barangay.total_sale.toFixed(2)}</span>
                                         </div>
                                         <div className="h-2 w-full overflow-hidden rounded-full bg-[#f0ddc8]">
                                             <div className="h-full rounded-full bg-brand-orange" style={{ width: `${pct}%` }} />
                                         </div>
                                         <div className="mt-1 text-xs text-subtle">
-                                            {branch.sale_count} sale{branch.sale_count === 1 ? '' : 's'} · {pct.toFixed(1)}% of total
+                                            {barangay.sale_count} sale{barangay.sale_count === 1 ? '' : 's'} · {pct.toFixed(1)}% of total
                                         </div>
                                     </div>
                                 );
                             })}
-                            {branchSales.length === 0 && <p className="text-sm text-subtle">No sales recorded yet.</p>}
+                            {barangaySales.length === 0 && <p className="text-sm text-subtle">No sales recorded yet.</p>}
                         </div>
                     </div>
                 </div>

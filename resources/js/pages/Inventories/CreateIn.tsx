@@ -14,10 +14,10 @@ import { Plus, Trash2 } from 'lucide-react';
 import { createIn, storeIn } from '@/routes/inventories';
 import FlashAlerts from '@/components/flash-alerts';
 
-interface Branch {
+interface barangay {
     id: number;
     location: string;
-    branch_type: string;
+    barangay_type: string;
 }
 
 interface Product {
@@ -32,20 +32,20 @@ interface ProductRow {
 }
 
 interface Props {
-    branches: Branch[];
+    barangays: barangay[];
     products: Product[];
     stockMovementTypes: { value: string; label: string }[];
 }
 
-export default function CreateIn({ branches, products, stockMovementTypes }: Props) {
+export default function CreateIn({ barangays, products, stockMovementTypes }: Props) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
 
     const { data, setData, post, processing, errors } = useForm<{
-        branch_id: number | '';
+        barangay_id: number | '';
         stock_movement_type: string;
         productList: ProductRow[];
     }>({
-        branch_id: '',
+        barangay_id: '',
         stock_movement_type: 'delivery',
         productList: [{ product_id: '', quantity: 1 }],
     });
@@ -88,23 +88,23 @@ export default function CreateIn({ branches, products, stockMovementTypes }: Pro
                         <h2 className="mb-4 text-sm font-semibold text-ink">Details</h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>
-                                <Label htmlFor="branch_id">Branch</Label>
+                                <Label htmlFor="barangay_id">barangay</Label>
                                 <Select
-                                    value={data.branch_id ? String(data.branch_id) : undefined}
-                                    onValueChange={(value) => setData('branch_id', Number(value))}
+                                    value={data.barangay_id ? String(data.barangay_id) : undefined}
+                                    onValueChange={(value) => setData('barangay_id', Number(value))}
                                 >
-                                    <SelectTrigger id="branch_id" className="mt-1.5 w-full bg-white">
-                                        <SelectValue placeholder="Select a branch…" />
+                                    <SelectTrigger id="barangay_id" className="mt-1.5 w-full bg-white">
+                                        <SelectValue placeholder="Select a barangay…" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {branches.map((b) => (
+                                        {barangays.map((b) => (
                                             <SelectItem key={b.id} value={String(b.id)}>
-                                                {b.location} ({b.branch_type})
+                                                {b.location} ({b.barangay_type})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.branch_id && <p className="mt-1.5 text-sm text-danger">{errors.branch_id}</p>}
+                                {errors.barangay_id && <p className="mt-1.5 text-sm text-danger">{errors.barangay_id}</p>}
                             </div>
 
                             <div>

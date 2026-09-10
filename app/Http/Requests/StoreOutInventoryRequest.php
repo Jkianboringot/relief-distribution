@@ -26,7 +26,7 @@ class StoreOutInventoryRequest extends FormRequest
     public function rules(): array
     {
         return[
-            'branch_id' => ['required', 'exists:branches,id'],
+            'barangay_id' => ['required', 'exists:barangays,id'],
             'productList' => ['required', 'array', 'min:1'],
             'productList.*.product_id' => ['required', 'exists:products,id'],
             'productList.*.quantity' => ['required', 'integer', 'max:99999','min:1'],

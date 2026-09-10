@@ -8,7 +8,7 @@ use App\Enums\StockMovementType;
 use App\Http\Requests\StoreInInventoryRequest;
 use App\Http\Requests\StoreInventoryRequest;
 use App\Http\Requests\StoreOutInventoryRequest;
-use App\Models\Branch;
+use App\Models\barangay;
 use App\Models\Inventory;
 use App\Models\Product;
 use App\Services\InventoryService;
@@ -33,9 +33,9 @@ class InventoryController extends Controller
 {
     $search = $request->string('search')->trim();
 
-    $inventories = Inventory::with(['branchs', 'encoder', 'sales'])
+    $inventories = Inventory::with(['barangays', 'encoder', 'sales'])
         ->when($search->isNotEmpty(), function ($query) use ($search) {
-            $query->whereHas('branchs', function ($q) use ($search) {
+            $query->whereHas('barangays', function ($q) use ($search) {
                 $q->where('location', 'like', "{$search}%")
                   ->orWhere('name', 'like', "{$search}%");
             });
@@ -48,7 +48,7 @@ class InventoryController extends Controller
             'type' => $inv->type,
             'inventory_type' => $inv->inventory_type,
             'stock_movement_type' => $inv->stock_movement_type,
-            'branch' => $inv->branchs?->name,
+            'barangay' => $inv->barangays?->name,
             'encoder' => $inv->encoder?->name,
             'cash_amount' => $inv->sales?->cash_amount,
             'net_cash' => $inv->sales?->net_cash,
@@ -68,7 +68,7 @@ class InventoryController extends Controller
     //     return Inertia::render('Inventories/CreateIn', [
 
     //         'stockMovementTypes' => collect(StockMovementType::cases())->map(fn($cases) => ['value' => $cases->value, 'label' => Str::headline($cases->name)]),
-    //         'branches' => Branch::select('id', 'location', 'branch_type')->get(),
+    //         'barangays' => barangay::select('id', 'location', 'barangay_type')->get(),
     //         'products' => Product::select('id', 'name', 'price')->get(),
     //     ]);
     // }
@@ -81,7 +81,7 @@ class InventoryController extends Controller
         return Inertia::render('Inventories/EditIn', [
             'inventory' => [
                 'id' => $inventory->id,
-                'branch_id' => $inventory->branch_id,
+                'barangay_id' => $inventory->barangay_id,
                 'stock_movement_type' => $inventory->stock_movement_type,
                 'productList' => $inventory->items->map(fn($i) => [
                     'product_id' => $i->product_id,
@@ -89,7 +89,7 @@ class InventoryController extends Controller
                 ]),
             ],
             'stockMovementTypes' => collect(StockMovementType::cases())->map(fn($c) => ['value' => $c->value, 'label' => Str::headline($c->name)]),
-            'branches' => Branch::select('id', 'location', 'branch_type')->get(),
+            'barangays' => barangay::select('id', 'location', 'barangay_type')->get(),
             'products' => Product::select('id', 'name', 'price')->get(),
         ]);
     }
@@ -100,7 +100,7 @@ class InventoryController extends Controller
 
         $data = $request->validated();
         $inv = $this->inventoryService->inventoryUpdateIn($inventory, [
-            'branch_id' => $data['branch_id'],
+            'barangay_id' => $data['barangay_id'],
             'inventory' => ['stock_movement_type' => $data['stock_movement_type']],
             'productList' => $data['productList'],
         ]);
@@ -116,10 +116,10 @@ class InventoryController extends Controller
     {
         $inventory->load(['items', 'sales']);
 
-        $branches = Branch::with('products')->get()->map(fn(Branch $branch) => [
-            'id' => $branch->id,
-            'location' => $branch->location,
-            'products' => $branch->products->map(fn(Product $product) => [
+        $barangays = barangay::with('products')->get()->map(fn(barangay $barangay) => [
+            'id' => $barangay->id,
+            'location' => $barangay->location,
+            'products' => $barangay->products->map(fn(Product $product) => [
                 'id' => $product->id,
                 'name' => $product->name,
                 'quantity' => $product->pivot->quantity,
@@ -129,7 +129,7 @@ class InventoryController extends Controller
         return Inertia::render('Inventories/EditOut', [
             'inventory' => [
                 'id' => $inventory->id,
-                'branch_id' => $inventory->branch_id,
+                'barangay_id' => $inventory->barangay_id,
                 'stock_movement_type' => $inventory->stock_movement_type??'',
                 'productList' => $inventory->items->map(fn($i) => [
                     'product_id' => $i->product_id,
@@ -144,7 +144,7 @@ class InventoryController extends Controller
             ],
             'shifts' => collect(Shift::cases())->map(fn($c) => ['value' => $c->value, 'label' => Str::headline($c->name)]),
             'stockMovementTypes' => collect(StockMovementType::cases())->map(fn($c) => ['value' => $c->value, 'label' => Str::headline($c->name)]),
-            'branches' => $branches,
+            'barangays' => $barangays,
         ]);
     }
 
@@ -154,7 +154,7 @@ class InventoryController extends Controller
         $data = $request->validated();
 
         $inv = $this->inventoryService->inventoryUpdateOut($inventory, [
-            'branch_id' => $data['branch_id'],
+            'barangay_id' => $data['barangay_id'],
             'inventory' => ['stock_movement_type' => $data['stock_movement_type']],
             'productList' => $data['productList'],
             'sale' => [
@@ -182,7 +182,7 @@ class InventoryController extends Controller
         return Inertia::render('Inventories/CreateIn', [
 
             'stockMovementTypes' => collect(StockMovementType::cases())->map(fn($cases) => ['value' => $cases->value, 'label' => Str::headline($cases->name)]),
-            'branches' => Branch::select('id', 'location', 'branch_type')->get(),
+            'barangays' => barangay::select('id', 'location', 'barangay_type')->get(),
             'products' => Product::select('id', 'name', 'price')->get(),
         ]);
     }
@@ -193,7 +193,7 @@ class InventoryController extends Controller
         $data = $request->validated();
 
         $inv = $this->inventoryService->inventoryIn([
-            'branch_id' => $data['branch_id'],
+            'barangay_id' => $data['barangay_id'],
             'inventory' => [
                 'stock_movement_type' => $data['stock_movement_type'],
 
@@ -211,16 +211,16 @@ class InventoryController extends Controller
     }
 
     /**
-     * Show the "Stock Out" form. Sends every branch along with the
+     * Show the "Stock Out" form. Sends every barangay along with the
      * products it already carries (with current quantity), so the
      * frontend can filter/display stock without extra requests.
      */
     public function createOut(): Response
     {
-        $branches = Branch::with('products')->get()->map(fn(Branch $branch) => [
-            'id' => $branch->id,
-            'location' => $branch->location,
-            'products' => $branch->products->map(fn(Product $product) => [
+        $barangays = barangay::with('products')->get()->map(fn(barangay $barangay) => [
+            'id' => $barangay->id,
+            'location' => $barangay->location,
+            'products' => $barangay->products->map(fn(Product $product) => [
                 'id' => $product->id,
                 'name' => $product->name,
                 'price' => $product->price,
@@ -233,7 +233,7 @@ class InventoryController extends Controller
 
             'stockMovementTypes' => collect(StockMovementType::cases())->map(fn($cases) => ['value' => $cases->value, 'label' => Str::headline($cases->name)]),
 
-            'branches' => $branches,
+            'barangays' => $barangays,
         ]);
     }
 
@@ -243,7 +243,7 @@ class InventoryController extends Controller
         $data = $request->validated();
 
         $inv = $this->inventoryService->inventoryOut([
-            'branch_id' => $data['branch_id'],
+            'barangay_id' => $data['barangay_id'],
             'inventory' => [
                 'stock_movement_type' => $data['stock_movement_type'],
 

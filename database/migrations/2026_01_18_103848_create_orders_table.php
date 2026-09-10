@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->boolean('status')->default(false); // remove this
-            $table->foreignId('branch_id')->constrained('branches');
-            $table->index('branch_id','orders_branch_id_index');//even if its small its essential for faster query and filter
+            $table->foreignId('barangay_id')->constrained('barangays');
+            $table->index('barangay_id','orders_barangay_id_index');//even if its small its essential for faster query and filter
 //even if its small its essential for faster query and filter go ingredient table and read example 
 
 

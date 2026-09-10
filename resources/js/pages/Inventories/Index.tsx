@@ -19,7 +19,7 @@ interface InventoryRow {
     type: string;
     inventory_type: string | null;
     stock_movement_type: string | null;
-    branch: string | null;
+    barangay: string | null;
     encoder: string | null;
     cash_amount: number | null;
     net_cash: number | null;
@@ -133,7 +133,7 @@ export default function Index() {
                         <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
                             <TableHead>#</TableHead>
                             <TableHead>Type</TableHead>
-                            <TableHead>Branch</TableHead>
+                            <TableHead>barangay</TableHead>
                             <TableHead>Inventory Type</TableHead>
                             <TableHead>Encoder</TableHead>
                             <TableHead className="text-right">Cash on Hand</TableHead>
@@ -167,7 +167,7 @@ export default function Index() {
                                         {inv.inventory_type}
                                     </span>
                                 </TableCell>
-                                <TableCell className="font-medium text-[#7a3b12]">{inv.branch ?? '—'}</TableCell>
+                                <TableCell className="font-medium text-[#7a3b12]">{inv.barangay ?? '—'}</TableCell>
                                 <TableCell>{inv.stock_movement_type ?? '—'}</TableCell>
                                 <TableCell>{inv.encoder ?? '—'}</TableCell>
                                 <TableCell className="text-right">
@@ -189,7 +189,7 @@ export default function Index() {
                                         <button
                                             type="button"
                                             disabled={processing}
-                                            onClick={() => handleDelete(inv.id, inv.branch ?? `#${inv.id}`)}
+                                            onClick={() => handleDelete(inv.id, inv.barangay ?? `#${inv.id}`)}
                                             className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"
                                         >
                                             <Trash2 className="h-4 w-4" />

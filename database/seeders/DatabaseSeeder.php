@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ProductSeeder::class,
 
-            BranchSeeder::class,
+            barangaySeeder::class,
             // EmployeeSeeder::class,
             UserSeeder::class,
             InventorySeeder::class,

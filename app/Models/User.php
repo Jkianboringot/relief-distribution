@@ -50,12 +50,12 @@ use HasRoles;
         'name',
         'email',
         'password',
-        'branch_id'
+        'barangay_id'
     ];
 
-    public function branch(): BelongsTo
+    public function barangay(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(barangay::class);
     }
 
     public function inventory()

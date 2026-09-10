@@ -19,7 +19,7 @@ return new class extends Migration {
         Schema::create('payroll', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained();
-            // $table->foreignId('branch_id')->constrained(); //i dont know why i add this here but remove its in notes i explain it why am removing it
+            // $table->foreignId('barangay_id')->constrained(); //i dont know why i add this here but remove its in notes i explain it why am removing it
             //REVIEW
             //just do gross_pay - deduct to get net pay, we dont
             // need to put net pay here since it can be derived to this two

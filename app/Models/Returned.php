@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Returned extends Model
 {
-    protected $fillable = ['order_id', 'branch_id'];
+    protected $fillable = ['order_id', 'barangay_id'];
 
     public function products(): BelongsToMany
     {
@@ -23,9 +23,9 @@ class Returned extends Model
          
     }
 
-         public function branch(): BelongsTo
+         public function barangay(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(barangay::class);
          
     }
 }

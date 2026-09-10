@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\BranchType;
+use App\Enums\barangayType;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-class BranchRequest extends FormRequest
+class barangayRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,9 +26,9 @@ class BranchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:75', 'min:3', Rule::unique('branches', 'name')->ignore($this->route('branch'))],
+            'name' => ['required', 'string', 'max:75', 'min:3', Rule::unique('barangays', 'name')->ignore($this->route('barangay'))],
             'location' => ['nullable', 'string', 'max:100', 'min:3'],
-            'branch_type' => ['required', new Enum(BranchType::class)],
+            'barangay_type' => ['required', new Enum(barangayType::class)],
         ];
     }
 }

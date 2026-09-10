@@ -19,9 +19,9 @@ class Inventory extends Model
     }
 
 
-    public function branchs()
+    public function barangays()
     {
-        return $this->belongsTo(Branch::class, 'branch_id');
+        return $this->belongsTo(barangay::class, 'barangay_id');
     }
     public function encoder(): BelongsTo
     {

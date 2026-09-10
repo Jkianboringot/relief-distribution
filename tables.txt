@@ -1,0 +1,291 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Barangays
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('barangays', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('name');
+            $table->string('code')->unique();
+            $table->string('district')->nullable();
+            $table->string('contact_person')->nullable();
+            $table->string('contact_number')->nullable();
+
+            $table->timestamps();
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Users
+        |--------------------------------------------------------------------------
+        |
+        | Roles are handled by Spatie Laravel Permission.
+        |
+        */
+
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+
+            $table->timestamps();
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Beneficiaries
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('beneficiaries', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('barangay_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->string('first_name');
+            $table->string('middle_name')->nullable();
+            $table->string('last_name');
+
+            $table->date('birthdate');
+
+            $table->enum('gender', [
+                'male',
+                'female',
+            ]);
+
+            $table->string('address');
+            $table->unsignedInteger('household_members');
+
+            $table->string('qr_code')->unique();
+
+            $table->enum('status', [
+                'unclaimed',
+                'claimed',
+            ])->default('unclaimed');
+
+            $table->foreignId('registered_by')
+                ->constrained('users')
+                ->restrictOnDelete();
+
+            $table->timestamps();
+
+            $table->index([
+                'barangay_id',
+                'status',
+            ]);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Inventory Stocks
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('inventory_stocks', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('barangay_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
+            $table->string('type');
+            $table->string('source');
+            $table->string('classification');
+
+            $table->unsignedInteger('quantity_received');
+            $table->unsignedInteger('quantity_released')->default(0);
+            $table->unsignedInteger('remaining_quantity')->default(0);
+
+            $table->string('allocation')->nullable();
+            $table->string('release_item')->nullable();
+
+            $table->timestamps();
+
+            $table->index([
+                'barangay_id',
+                'type',
+            ]);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Stock Transfers
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('stock_transfers', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('inventory_stock_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->foreignId('barangay_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->unsignedInteger('quantity');
+
+            $table->foreignId('transferred_by')
+                ->constrained('users')
+                ->restrictOnDelete();
+
+            $table->enum('status', [
+                'pending',
+                'completed',
+            ])->default('pending');
+
+            $table->timestamp('transferred_at')->nullable();
+
+            $table->timestamps();
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Distribution Schedules
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('distribution_schedules', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('barangay_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->string('item_type');
+
+            $table->unsignedInteger('expected_quantity');
+
+            $table->date('scheduled_date');
+
+            $table->enum('status', [
+                'pending',
+                'completed',
+            ])->default('pending');
+
+            $table->foreignId('created_by')
+                ->constrained('users')
+                ->restrictOnDelete();
+
+            $table->timestamps();
+
+            $table->index([
+                'barangay_id',
+                'scheduled_date',
+            ]);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Distribution Records
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('distribution_records', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('beneficiary_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->foreignId('barangay_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->foreignId('distribution_schedule_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->foreignId('verified_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->enum('status', [
+                'pending',
+                'completed',
+                'claimed',
+                'rejected',
+                'cancelled',
+            ])->default('pending');
+
+            $table->timestamp('claimed_at')->nullable();
+
+            $table->timestamps();
+
+            $table->index([
+                'beneficiary_id',
+                'status',
+            ]);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verification Logs
+        |--------------------------------------------------------------------------
+        */
+
+        Schema::create('verification_logs', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('beneficiary_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->foreignId('barangay_id')
+                ->constrained()
+                ->restrictOnDelete();
+
+            $table->foreignId('scanned_by')
+                ->constrained('users')
+                ->restrictOnDelete();
+
+            $table->enum('result', [
+                'success',
+                'rejected_duplicate',
+                'invalid_qr',
+            ]);
+
+            $table->timestamp('scanned_at');
+
+            $table->timestamps();
+
+            $table->index([
+                'beneficiary_id',
+                'result',
+            ]);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('verification_logs');
+        Schema::dropIfExists('distribution_records');
+        Schema::dropIfExists('distribution_schedules');
+        Schema::dropIfExists('stock_transfers');
+        Schema::dropIfExists('inventory_stocks');
+        Schema::dropIfExists('beneficiaries');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('barangays');
+    }
+};

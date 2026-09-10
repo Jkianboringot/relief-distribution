@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-// import { branch } from '@/routes';
+// import { barangay } from '@/routes';
 
 export default function Product() {
     return (

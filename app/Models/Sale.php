@@ -12,7 +12,7 @@ class Sale extends Model
     use HasFactory;
 
     protected $fillable = [
-        'branch_id',
+        'barangay_id',
         'inventory_id',
         'shift',
         'cash_shortage',
@@ -22,9 +22,9 @@ class Sale extends Model
         'remitted_expenses',
         'net_cash'
     ];
-    public function branch()
+    public function barangay()
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(barangay::class);
     }
     public function encoder()
     {

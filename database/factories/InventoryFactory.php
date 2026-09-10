@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\InOutType;
 use App\Enums\StockMovementType;
-use App\Models\Branch;
+use App\Models\barangay;
 use App\Models\Inventory;
 use App\Models\StockMovement;
 use App\Models\User;
@@ -24,7 +24,7 @@ class InventoryFactory extends Factory
 
             'encoder_id' => User::inRandomOrder()->value('id'),
 
-            'branch_id' => Branch::inRandomOrder()->value('id'),
+            'barangay_id' => barangay::inRandomOrder()->value('id'),
 
             'stock_movement_type' => fake()->randomElement([
                 StockMovementType::Transfer->value,

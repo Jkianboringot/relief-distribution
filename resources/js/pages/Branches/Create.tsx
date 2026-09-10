@@ -4,17 +4,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CircleAlert } from 'lucide-react';
-import { store } from '@/routes/branches';
+import { store } from '@/routes/barangays';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import FlashAlerts from '@/components/flash-alerts';
 
-interface BranchForm {
+interface barangayForm {
     name: string;
     location: string|'';
 
     // HACK - make this enum interface
-    branch_type: string;
+    barangay_type: string;
 }
 
 interface SelectOption {
@@ -24,18 +24,18 @@ interface SelectOption {
 
 
 interface Props{
-    branch_types:  SelectOption[];
+    barangay_types:  SelectOption[];
 }
 
 
 
 
-export default function Create({ branch_types }:Props) {
+export default function Create({ barangay_types }:Props) {
      const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
-    const { data, setData, post, processing, errors } = useForm<BranchForm>({
+    const { data, setData, post, processing, errors } = useForm<barangayForm>({
         name: '',
         location: '',
-        branch_type: '',
+        barangay_type: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -45,14 +45,14 @@ export default function Create({ branch_types }:Props) {
 
     return (
         <>
-            <Head title="Create New Branch" />
+            <Head title="Create New barangay" />
 
             <div className="mx-auto w-full  max-w-4xl p-6">
                   <FlashAlerts flash={flash} />
                 <div className="mb-4">
-                    <h1 className=" text-2xl font-bold text-ink">New Branch</h1>
+                    <h1 className=" text-2xl font-bold text-ink">New barangay</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Add a branch to your catalog.
+                        Add a barangay to your catalog.
                     </p>
                 </div>
 
@@ -78,12 +78,12 @@ export default function Create({ branch_types }:Props) {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="name" className="font-semibold text-ink">
-                                Branch Name
+                                barangay Name
                             </Label>
                             <Input
                                 id="name"
                                 type='text'
-                                placeholder="Branch name"
+                                placeholder="barangay name"
                                 value={data.name}
                                 minLength={3}
                                 maxLength={75}
@@ -96,12 +96,12 @@ export default function Create({ branch_types }:Props) {
 
                         <div className="space-y-1">
                             <Label htmlFor="location" className="font-semibold text-ink">
-                                Branch Location
+                                barangay Location
                             </Label>
                             <Input
                                 id="location"
                                 type='text'
-                                placeholder="Branch location"
+                                placeholder="barangay location"
                                 value={data.location}
                                 minLength={3}
                                 maxLength={100}
@@ -116,20 +116,20 @@ export default function Create({ branch_types }:Props) {
                     </div>
 
                     <div>
-                        <Label htmlFor="branch_type">Branch Type</Label>
-                        <Select value={data.branch_type || undefined} onValueChange={(value) => setData('branch_type', value)}>
-                            <SelectTrigger id="branch_type" className="mt-1.5 w-full bg-white sm:max-w-xs">
-                                <SelectValue placeholder="Select branch type…" />
+                        <Label htmlFor="barangay_type">barangay Type</Label>
+                        <Select value={data.barangay_type || undefined} onValueChange={(value) => setData('barangay_type', value)}>
+                            <SelectTrigger id="barangay_type" className="mt-1.5 w-full bg-white sm:max-w-xs">
+                                <SelectValue placeholder="Select barangay type…" />
                             </SelectTrigger>
                             <SelectContent>
-                                {branch_types.map((v) => (
+                                {barangay_types.map((v) => (
                                     <SelectItem key={v.value} value={v.value}>
                                         {v.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.branch_type && <p className="mt-1.5 text-sm text-danger">{errors.branch_type}</p>}
+                        {errors.barangay_type && <p className="mt-1.5 text-sm text-danger">{errors.barangay_type}</p>}
                     </div>
 
 
@@ -139,7 +139,7 @@ export default function Create({ branch_types }:Props) {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Save Branch
+                            Save barangay
                         </Button>
                     </div>
                 </form>
@@ -151,8 +151,8 @@ export default function Create({ branch_types }:Props) {
 Create.layout = {
     breadcrumbs: [
         {
-            title: 'Create New Branch',
-            href: '/branches/create',
+            title: 'Create New barangay',
+            href: '/barangays/create',
         },
     ],
 };

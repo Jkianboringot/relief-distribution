@@ -2,9 +2,9 @@
 
 namespace App\Enums;
 
-enum BranchType: string
+enum barangayType: string
 {
-    case Branch = 'branch';
+    case barangay = 'barangay';
     case Center = 'center';
     case Franchise = 'franchise';
 }

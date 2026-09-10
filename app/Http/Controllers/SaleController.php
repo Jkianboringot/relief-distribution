@@ -37,7 +37,7 @@ class SaleController extends Controller
 
         } catch (\Throwable $th) {
             Log::error($th);
-            return back()->with('message', 'Cannot delete this sale — it still has associated inventory or branch records.');
+            return back()->with('message', 'Cannot delete this sale — it still has associated inventory or barangay records.');
         }
 
         return redirect()->route('sales.index')->with('message', 'Sale Delete Successfully');
@@ -99,9 +99,9 @@ class SaleController extends Controller
     {
         $search = $request->string('search')->trim();
 
-        $sale = Sale::with(['branch', 'encoder', 'inventory'])
+        $sale = Sale::with(['barangay', 'encoder', 'inventory'])
             ->when($search->isNotEmpty(), function ($query) use ($search) {
-                $query->whereHas('branch', function ($q) use ($search) {
+                $query->whereHas('barangay', function ($q) use ($search) {
                     $q->where('name', 'like', "{$search}%")
                         ->orWhere('location', 'like', "{$search}%");
                 });
@@ -111,7 +111,7 @@ class SaleController extends Controller
             ->withQueryString()
             ->through(fn(Sale $sl) => [
                 'id' => $sl->id,
-                'branch' => $sl->branch?->name,
+                'barangay' => $sl->barangay?->name,
                 'inventory' => $sl->inventory?->id,
                 'encoder' => $sl->encoder?->name,
                 'cash_amount' => $sl->cash_amount,

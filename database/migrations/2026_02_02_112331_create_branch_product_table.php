@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         // if this is table it just mean extension of another table, not new table, like create
-        Schema::create('branch_product', function (Blueprint $table) {
+        Schema::create('barangay_product', function (Blueprint $table) {
 
             // WHY we keep this is because we can use it later on for the drift
             $table->id();
@@ -28,20 +28,20 @@ return new class extends Migration {
             $table->integer('quantity')->unsigned();
 
             // NEWLY-ADDED - just added this becuase unique needs it
-            $table->foreignId('branch_id')->constrained();
+            $table->foreignId('barangay_id')->constrained();
 
             //STUDY
             $table->foreignId('product_id')->constrained();
 
 
 
-            $table->unique(['branch_id', 'product_id']);
+            $table->unique(['barangay_id', 'product_id']);
             //INSIGHT - this insure that each add_to_ingredient dont repeat
-            //so product:1, branch:1, is unique for on record it means branch 
+            //so product:1, barangay:1, is unique for on record it means barangay 
             //only has one product with id of one it does not duplicate, also 
             //when doing thing we need to hink about order because if it is query
-            //or join the place ment of branch_id or product_id will depend on what 
-            //we use to quer if we use branch to get hte product from it then we need it 
+            //or join the place ment of barangay_id or product_id will depend on what 
+            //we use to quer if we use barangay to get hte product from it then we need it 
             // first so that its faster ,if we use product then we need product id first, 
             //search it up to leanr more, but this is for inedx not unique, and this can only 
             // really be decided when we already have query not now
@@ -55,6 +55,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('branch_product');
+        Schema::dropIfExists('barangay_product');
     }
 };

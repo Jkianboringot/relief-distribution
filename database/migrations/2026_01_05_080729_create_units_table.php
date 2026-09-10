@@ -12,8 +12,8 @@ return new class extends Migration {
     {
 
         // This will be used to calculate ingredients stock since ingredients are tracked by unit(pack).
-        // For example, a pack of patties is sent to a branch. Each pack contains 12 patties,
-        // and if 10 packs are sent, the branch should technically have 120 patties in total.
+        // For example, a pack of patties is sent to a barangay. Each pack contains 12 patties,
+        // and if 10 packs are sent, the barangay should technically have 120 patties in total.
         //
         // This will also be used when calculating the expected inventory value and adding stock. However, we
         // need to clarify how the cashier reports inventory back to the encoder.

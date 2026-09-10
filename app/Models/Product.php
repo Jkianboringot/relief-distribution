@@ -72,9 +72,9 @@ and view, then figure this out, also viszualize what you did in ingredient to th
 
 
 
-  public function branches(): BelongsToMany
+  public function barangays(): BelongsToMany
   {
-    return $this->belongsToMany(Branch::class)->withPivot('quantity');
+    return $this->belongsToMany(barangay::class)->withPivot('quantity');
   }
 
 
@@ -94,7 +94,7 @@ and view, then figure this out, also viszualize what you did in ingredient to th
   public function expectedSale()
   {
     // FIXME - not done or tested, this will show the expected sale of whole inventory
-    return $this->branch()->quantity + $this->product->price;
+    return $this->barangay()->quantity + $this->product->price;
   }
 
 

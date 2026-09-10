@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum ExpenseCategory: string
 {
-    case Branch = 'branch';
+    case barangay = 'barangay';
     case Central = 'central';
     case Commissary = 'commissary';
 }

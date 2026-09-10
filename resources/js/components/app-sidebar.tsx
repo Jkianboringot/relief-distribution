@@ -33,8 +33,8 @@ const mainNavItems: NavItem[] = [
         icon: Boxes,
     },
      {
-        title: 'Branch',
-        href: '/branches',
+        title: 'barangay',
+        href: '/barangays',
         icon: Building2,
     },
      {

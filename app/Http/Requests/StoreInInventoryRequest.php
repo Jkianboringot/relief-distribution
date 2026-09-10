@@ -25,7 +25,7 @@ class StoreInInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'branch_id' => ['required', 'exists:branches,id'],
+            'barangay_id' => ['required', 'exists:barangays,id'],
             'stock_movement_type' => [
                 'required',
                 new Enum(StockMovementType::class),

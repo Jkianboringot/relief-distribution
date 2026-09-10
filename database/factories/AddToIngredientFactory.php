@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Branch;
+use App\Models\barangay;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +18,7 @@ class AddToIngredientFactory extends Factory
     public function definition(): array
     {
         return [
-                'branch_id' => Branch::inRandomOrder()->value('id'),
+                'barangay_id' => barangay::inRandomOrder()->value('id'),
         ];
     }
 }

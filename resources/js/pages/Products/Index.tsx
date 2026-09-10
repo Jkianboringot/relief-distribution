@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table';
 import { create, deleteMethod, edit, index as productsIndex } from '@/routes/products';
 import FlashAlerts from '@/components/flash-alerts';
-import { index } from '@/routes/branches';
+import { index } from '@/routes/barangays';
 
 interface Product {
     id: number;

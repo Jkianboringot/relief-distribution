@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique(); //index successfull, unique auto index
-            // $table->foreignId('branch_id')->constrained()->nullable();
-            // its fine to be nullable as not all user create need to have an assign branch
+            // $table->foreignId('barangay_id')->constrained()->nullable();
+            // its fine to be nullable as not all user create need to have an assign barangay
             //straight away, their is still processing
             $table->string('password');
             // $table->index('name','user_name_index'); contemplating this one
-            // $table->index('branch_id','user_branch_id_index');
+            // $table->index('barangay_id','user_barangay_id_index');
 
             $table->rememberToken();
             $table->timestamps();

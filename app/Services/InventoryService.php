@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\InOutType;
-use App\Models\Branch;
+use App\Models\barangay;
 use App\Models\Inventory;
 use App\Models\Sale;
 use Error;
@@ -27,7 +27,7 @@ class InventoryService
     //2. it save data and sync but it must go to check first
     // -data is just save in here but the validation happen before, check 
     // is possible if it is busines logic like below
-    //check: it must check first if branch and ingredient alrady exist in pivot table
+    //check: it must check first if barangay and ingredient alrady exist in pivot table
 
 
     // $data=[{
@@ -39,7 +39,7 @@ class InventoryService
 // }]
     function InventoryIN(array $data)
     {
-        // $data=['branch_id'=>1,'ingredient_id'=>1,'quantity'=>10]
+        // $data=['barangay_id'=>1,'ingredient_id'=>1,'quantity'=>10]
 
         try {
 
@@ -50,14 +50,14 @@ class InventoryService
                     //ASK-YOURSELF should i put this outside or inside
     
                     // TEST if this fail it should not run the foreact
-                    $branch = Branch::findOrFail($data['branch_id']);
+                    $barangay = barangay::findOrFail($data['barangay_id']);
 
                     $inv = new Inventory();
                     $inv->fill($data['inventory']);
 
                     $inv->encoder_id = auth()->id();
                     $inv->inventory_type = InOutType::In->value;
-                    $inv->branch_id = $branch->id; //ensure only insert if it exist, instead fo data[branch_id] which has possiblity of not existing
+                    $inv->barangay_id = $barangay->id; //ensure only insert if it exist, instead fo data[barangay_id] which has possiblity of not existing
     
                     $inv->save();
 
@@ -83,7 +83,7 @@ class InventoryService
                         //for each record, this was comfirm by ai, below commented code is ai solution, but i have not study it,
                         //just looking at it now
     
-                        //                     $existingProducts = $branch->products()
+                        //                     $existingProducts = $barangay->products()
                         // ->whereIn(
                         //     'product_id',
                         //     collect($data['productList'])->pluck('product_id')
@@ -92,10 +92,10 @@ class InventoryService
                         // ->keyBy('id');
                         //SOLUTION for n+1, instead of doing first, why not just get the whole collection save it then we dont 
                         //have to retake select all the time becasue we ahve it, but am not sure
-                        $existting = $branch->products()->where('product_id', $productID)->first();
+                        $existting = $barangay->products()->where('product_id', $productID)->first();
 
                         if ($existting) {
-                            $branch->products()->updateExistingPivot(
+                            $barangay->products()->updateExistingPivot(
                                 $productID,
                                 [
                                     'quantity' => $existting->pivot->quantity + $qty,
@@ -107,7 +107,7 @@ class InventoryService
     
                         } else {
                             // check if this has performance issues
-                            $branch->products()->attach($productID, ['quantity' => $qty, 'branch_id' => $branch->id]);
+                            $barangay->products()->attach($productID, ['quantity' => $qty, 'barangay_id' => $barangay->id]);
                             // dd($existting,'badd');
     
                         }
@@ -120,7 +120,7 @@ class InventoryService
                     // $inv->stock_movement->syncn([$inv]);
                     //REMOVE - implement what i did below but do it with eloquent 
                     //     $exist = DB::table('add_ingredients')
-                    //         ->where('branch_id', $data->branch_id)
+                    //         ->where('barangay_id', $data->barangay_id)
                     //         ->where('ingredient_id', $data->ingredient_id)
                     //         ->first();
     
@@ -129,7 +129,7 @@ class InventoryService
                     //     }
                     // else{
                     //         DB::table('add_ingredients')
-                    //          ->where('branch_id', $data->branch_id)
+                    //          ->where('barangay_id', $data->barangay_id)
                     //         ->where('ingredient_id', $data->ingredient_id)
                     //         ->update(['quantity'=>$data->quantity]);
                     // }
@@ -169,11 +169,11 @@ class InventoryService
 //     inventory_type=>,
 // ],
 //     productList =>[product1QTY=>1,product2QTY=>1,,product3QTY=>1,],
-//     sale=>[branch_id=>1,inventory_id=>id,shift=>openning,cash_amount=>50,gcash_amount=>50]
+//     sale=>[barangay_id=>1,inventory_id=>id,shift=>openning,cash_amount=>50,gcash_amount=>50]
 // }]
     function InventoryOUT(array $data)
     {
-        // $data=['branch_id'=>1,'ingredient_id'=>1,'quantity'=>10]
+        // $data=['barangay_id'=>1,'ingredient_id'=>1,'quantity'=>10]
 
         try {
 
@@ -181,22 +181,22 @@ class InventoryService
                 function () use ($data) {
 
                     //FAULT-TOLERANCE sicne this is here we might as will use it to check, if i fail whole thing should stop
-                    //ASK-YOURSELF we will have validation for branch:exist and that is enough so we dont really need the find or fila
+                    //ASK-YOURSELF we will have validation for barangay:exist and that is enough so we dont really need the find or fila
                     //we can use just fine, but it is  not bad to use findorfail but if it has performance added on top then we weill use find()
-                    $branch = Branch::findOrFail($data['branch_id']);
+                    $barangay = barangay::findOrFail($data['barangay_id']);
                     $inv = new Inventory();
                     $inv->fill($data['inventory']);
 
                     $inv->encoder_id = auth()->id();
                     $inv->inventory_type = InOutType::Out->value;
-                    $inv->branch_id = $branch->id; //ensure only insert if it exist, instead fo data[branch_id] which has possiblity of not existing
+                    $inv->barangay_id = $barangay->id; //ensure only insert if it exist, instead fo data[barangay_id] which has possiblity of not existing
                     $inv->save();
 
                     $sale = new Sale();
                     $sale->fill($data['sale']);
 
                     //ASK-YOURSELF i dont know if this will work since we are doing it in same transaction
-                    $sale->branch_id = $branch->id; //ensure only insert if it exist, instead fo data[branch_id] which has possiblity of not existing, also becuase input is not validated;
+                    $sale->barangay_id = $barangay->id; //ensure only insert if it exist, instead fo data[barangay_id] which has possiblity of not existing, also becuase input is not validated;
                     $sale->inventory_id = $inv->id;
                     $sale->save();
 
@@ -211,9 +211,9 @@ class InventoryService
                         // FAULT-TOLERANCE - this just for safe check, can be remove, ask 
                         // ASK-YOURSELF later, because i suspect we dont need this , because we expect product to be already thier
                         //OPTIMIZE - seem redundant to get the whole model 
-                        $existting = $branch->products()->where('product_id', $productID)->first();
+                        $existting = $barangay->products()->where('product_id', $productID)->first();
                         if ($existting) {
-                            $branch->products()->updateExistingPivot( //update to follow pattern 2
+                            $barangay->products()->updateExistingPivot( //update to follow pattern 2
                                 $productID,
                                 [
                                     'quantity' => $existting->pivot->quantity - $qty,
@@ -224,7 +224,7 @@ class InventoryService
                         } else {
                             // dd($existting, 'bad');
 
-                            //we need to throw error here since , in here we expect that an product already exist in this branch
+                            //we need to throw error here since , in here we expect that an product already exist in this barangay
                             //if not then something is wrong, we should'nt even be able to make this request
                             throw new Error('development: this error is bad, INVENTORYOUT, unexpected error');
                         }
@@ -259,21 +259,21 @@ class InventoryService
     {
         try {
             return DB::transaction(function () use ($inventory, $data) {
-                $branch = Branch::findOrFail($data['branch_id']);
+                $barangay = barangay::findOrFail($data['barangay_id']);
 
 
                 $inventory->fill($data['inventory']);
-                $inventory->branch_id = $branch->id;
+                $inventory->barangay_id = $barangay->id;
                 $inventory->save(); //this is update 
 
                 // reverse old quantities first
                 foreach ($inventory->items as $oldItem) {
-                    $pivot = $branch->products()->where('product_id', $oldItem->product_id)->first();
+                    $pivot = $barangay->products()->where('product_id', $oldItem->product_id)->first();
                     if ($pivot) {
                         // // OPTIMIZE - instead of doing it like this where we loop to get the old product()->item()
-                        // quantity and minusing that to $branch->products() current quantity to reverse the prev opertation,
+                        // quantity and minusing that to $barangay->products() current quantity to reverse the prev opertation,
                         //  why not just take the  old product()->item()  quantity then minus that to incoming quantity from productList
-                        //  that way we get the difference and that will be the one to be put up against the branch->product()
+                        //  that way we get the difference and that will be the one to be put up against the barangay->product()
                         //  this reduce number of operation, like instead of doing  4 operation at once in one foreach, 
                         //  we can just do 1 operation
 
@@ -281,7 +281,7 @@ class InventoryService
                         //  greater than  $pivot->pivot->quantity(10) then that will make current stock negative
                         //  which is not allowed, its fine since its in transaction but think this though
 
-                        $branch->products()->updateExistingPivot($oldItem->product_id, [
+                        $barangay->products()->updateExistingPivot($oldItem->product_id, [
                             'quantity' => $pivot->pivot->quantity - $oldItem->quantity,
                         ]);
                     }
@@ -294,13 +294,13 @@ class InventoryService
                     $productID = $listItem['product_id'];
                     $qty = $listItem['quantity'];
 
-                    $existing = $branch->products()->where('product_id', $productID)->first();
+                    $existing = $barangay->products()->where('product_id', $productID)->first();
                     if ($existing) {
-                        $branch->products()->updateExistingPivot($productID, [
+                        $barangay->products()->updateExistingPivot($productID, [
                             'quantity' => $existing->pivot->quantity + $qty,
                         ]);
                     } else {
-                        $branch->products()->attach($productID, ['quantity' => $qty, 'branch_id' => $branch->id]);
+                        $barangay->products()->attach($productID, ['quantity' => $qty, 'barangay_id' => $barangay->id]);
                     }
 
                     $inventory->items()->create(['product_id' => $productID, 'quantity' => $qty]);
@@ -323,21 +323,21 @@ class InventoryService
     {
         try {
             return DB::transaction(function () use ($inventory, $data) {
-                $branch = Branch::findOrFail($data['branch_id']);
+                $barangay = barangay::findOrFail($data['barangay_id']);
 
                 $inventory->fill($data['inventory']);
-                $inventory->branch_id = $branch->id;
+                $inventory->barangay_id = $barangay->id;
                 $inventory->save();
 
                 $inventory->sale->fill($data['sale']);
-                $inventory->sale->branch_id = $branch->id;
+                $inventory->sale->barangay_id = $barangay->id;
                 $inventory->sale->save();
 
                 // reverse old quantities (adding stock back that was minus before)
                 foreach ($inventory->items as $oldItem) {
-                    $pivot = $branch->products()->where('product_id', $oldItem->product_id)->first();
+                    $pivot = $barangay->products()->where('product_id', $oldItem->product_id)->first();
                     if ($pivot) {
-                        $branch->products()->updateExistingPivot($oldItem->product_id, [
+                        $barangay->products()->updateExistingPivot($oldItem->product_id, [
                             'quantity' => $pivot->pivot->quantity + $oldItem->quantity,
                         ]);
                     }
@@ -350,12 +350,12 @@ class InventoryService
                     $productID = $listItem['product_id'];
                     $qty = $listItem['quantity'];
 
-                    $existing = $branch->products()->where('product_id', $productID)->first();
+                    $existing = $barangay->products()->where('product_id', $productID)->first();
                     if (!$existing) {
                         throw new Error('development: this error is bad, INVENTORYUPDATEOUT, unexpected error');
                     }
 
-                    $branch->products()->updateExistingPivot($productID, [
+                    $barangay->products()->updateExistingPivot($productID, [
                         'quantity' => $existing->pivot->quantity - $qty,
                     ]);
 
@@ -377,22 +377,22 @@ class InventoryService
 {
     try {
         return DB::transaction(function () use ($inventory) {
-            $branch = Branch::findOrFail($inventory->branch_id);
+            $barangay = barangay::findOrFail($inventory->barangay_id);
 
             foreach ($inventory->items as $item) {
-                $pivot = $branch->products()->where('product_id', $item->product_id)->first();
+                $pivot = $barangay->products()->where('product_id', $item->product_id)->first();
 
                 if ($pivot) {
                     // IN added stock, so deleting it must subtract back out.
                     // OUT subtracted stock, so deleting it must add back in.
                     $sign = $inventory->inventory_type === InOutType::In->value ? -1 : 1;
 
-                    $branch->products()->updateExistingPivot($item->product_id, [
+                    $barangay->products()->updateExistingPivot($item->product_id, [
                         'quantity' => $pivot->pivot->quantity + ($sign * $item->quantity),
                     ]);
                 }
                 // NOTE - if $pivot is missing entirely here, that means the product
-                // was removed from the branch some other way after this inventory
+                // was removed from the barangay some other way after this inventory
                 // record was created. Silently skipping is the safe default (nothing
                 // to reverse against), but you may want to Log::warning this case —
                 // it usually signals a data integrity issue worth knowing about.

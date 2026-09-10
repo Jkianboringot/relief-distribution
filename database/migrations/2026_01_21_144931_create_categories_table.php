@@ -18,8 +18,8 @@ return new class extends Migration
               // $table->index('category_id','category_id_index');  too small , maybe expand in the future but fr now mb only has 10 category
                 //this will stay index becuase i dont even think i need this shit, becuase in food stall for burger thier is only a few categry
                 //meat,bread,sauce,softdrinks,accessocers that is all so i dont know if i even need category so for now
-                // i will let this be a comment and in category i will make it not unique for now, becuase its unlike branch which will be use alot
-                // in filter for , branch_order , for branch_return, branch_add_ingredient , this does not have that, but branch does, but this is mytake 
+                // i will let this be a comment and in category i will make it not unique for now, becuase its unlike barangay which will be use alot
+                // in filter for , barangay_order , for barangay_return, barangay_add_ingredient , this does not have that, but barangay does, but this is mytake 
                 // for now i need to learn mroe
 
             //rethink and justify
