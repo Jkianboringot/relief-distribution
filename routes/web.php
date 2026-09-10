@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\barangayController;
+use App\Http\Controllers\BeneficiaryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
@@ -71,6 +72,29 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
             Route::put('/{barangay}', [BarangayController::class, 'update'])->name('update');
 
             Route::delete('/{barangay}', [BarangayController::class, 'delete'])->name('delete');
+
+
+        }
+    );
+
+     Route::prefix('beneficiaries')->name('beneficiaries.')->group(
+        function () {
+            Route::get('/', [BeneficiaryController::class, 'index'])
+                ->name('index');
+
+            // this is for productVIew
+            Route::get('/{beneficiary}/products', [BeneficiaryController::class, 'products'])
+                ->name('products');
+
+
+            Route::get('/create', [BeneficiaryController::class, 'create'])->name('create');
+            Route::post('/', [BeneficiaryController::class, 'store'])->name('store');
+
+            // just call ui
+            Route::get('/{beneficiary}/edit', [BeneficiaryController::class, 'edit'])->name('edit');
+            Route::put('/{beneficiary}', [BeneficiaryController::class, 'update'])->name('update');
+
+            Route::delete('/{beneficiary}', [BeneficiaryController::class, 'delete'])->name('delete');
 
 
         }

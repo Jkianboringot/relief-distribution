@@ -38,10 +38,7 @@ class BarangayController extends Controller
 
     public function create()
     {
-        return Inertia::render('Barangays/Create', [
-            'barangay_types' => collect(barangayType::cases())->map(fn($cases) => ['value' => $cases->value, 'label' => Str::headline($cases->name)]),
-
-        ]);
+        return Inertia::render('Barangays/Create');
     }
 
     public function store(barangayRequest $request)
@@ -68,7 +65,6 @@ class BarangayController extends Controller
         // dd($barangay);
         return Inertia::render('Barangays/Edit', [
             'barangays' => $barangay,
-            'barangay_types' => collect(barangayType::cases())->map(fn($cases) => ['value' => $cases->value, 'label' => Str::headline($cases->name)]),
         ]);
 
     }
