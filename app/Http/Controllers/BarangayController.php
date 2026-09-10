@@ -12,7 +12,7 @@ use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
 use Str;
 
-class barangayController extends Controller
+class BarangayController extends Controller
 {
 
     //     public function delete(Request $request)
