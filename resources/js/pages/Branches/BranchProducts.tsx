@@ -64,7 +64,7 @@ export default function BranchProducts({ branch, products }: Props) {
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#fdf8f2]">
+                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-[#f0ddc8] bg-[#fbead9] hover:bg-[#fbead9]">

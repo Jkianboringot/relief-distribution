@@ -82,7 +82,7 @@ export default function CreateIn({ branches, products, stockMovementTypes }: Pro
             </div>
 
             <form onSubmit={submit} className="w-full">
-                <div className="w-full overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#fdf8f2]">
+                <div className="w-full overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
                     {/* Details */}
                     <div className="border-b border-[#f0ddc8] p-6">
                         <h2 className="mb-4 text-sm font-semibold text-ink">Details</h2>

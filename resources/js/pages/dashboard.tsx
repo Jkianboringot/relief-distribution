@@ -63,7 +63,7 @@ export default function Dashboard({ overallTotal, branchSales }: Props) {
 
 function SummaryCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
     return (
-        <div className="relative overflow-hidden rounded-xl border border-sidebar-border/70 bg-[#fdf8f2] p-5 dark:border-sidebar-border">
+        <div className="relative overflow-hidden rounded-xl border border-sidebar-border/70 bg-[#ffffff] p-5 dark:border-sidebar-border">
             <p className="text-xs font-medium text-subtle">{label}</p>
             <p className="mt-1 text-2xl font-extrabold tracking-tight text-ink">{value}</p>
             {sub && <p className="mt-0.5 text-sm text-subtle">{sub}</p>}

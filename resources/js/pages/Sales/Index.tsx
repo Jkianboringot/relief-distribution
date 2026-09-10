@@ -119,7 +119,7 @@ export default function Index() {
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#fdf8f2]">
+                <div className="overflow-hidden rounded-xl border border-[#f0ddc8] bg-[#ffffff]">
                     <div className="flex items-center justify-end gap-3 border-b border-[#f0ddc8] px-5 py-3">
                         <div className="relative">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-orange" />
