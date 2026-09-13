@@ -20,8 +20,10 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->call([
             BarangaySeeder::class,
-
             UserSeeder::class,
+            RolePermissionSeeder::class,
+            BenificiarySeeder::class,
+
             ]
         );
     

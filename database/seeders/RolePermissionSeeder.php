@@ -57,7 +57,9 @@ class RolePermissionSeeder extends Seeder
             'distributions.view_own',
             'reports.download',
             'analytics.dashboard',
-            'verify.beneficiary',
+            'verify.Benificiary',
+            'approval.stockverifcation'
+
         ];
 
         foreach ($permissions as $permission) {
@@ -93,12 +95,8 @@ class RolePermissionSeeder extends Seeder
             'distributions.create',
             'distributions.update',
             'distributions.delete',
-
-             
-
-
             'reports.download',
-            'verify.beneficiary',
+            'verify.Benificiary',
             'approval.stockverifcation'
 
         
@@ -137,6 +135,6 @@ class RolePermissionSeeder extends Seeder
 
         $user=User::find(1);
 
-        $user->assignRole($admin);
+        $user->assignRole($lgustaff);
     }
 }

@@ -1,11 +1,12 @@
 <?php
 
 use App\Http\Controllers\barangayController;
-use App\Http\Controllers\BeneficiaryController;
+use App\Http\Controllers\BenificiaryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\UserController;
 use App\Models\barangay;
 use Illuminate\Support\Facades\Route;
 
@@ -13,7 +14,7 @@ Route::redirect('/', 'dashboard')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 
     Route::prefix('barangays')->name('barangays.')->group(
@@ -39,24 +40,24 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
         }
     );
 
-     Route::prefix('beneficiaries')->name('beneficiaries.')->group(
+    Route::prefix('beneficiaries')->name('beneficiaries.')->group(
         function () {
-            Route::get('/', [BeneficiaryController::class, 'index'])
+            Route::get('/', [BenificiaryController::class, 'index'])
                 ->name('index');
 
             // this is for productVIew
-            Route::get('/{beneficiary}/products', [BeneficiaryController::class, 'products'])
+            Route::get('/{Benificiary}/products', [BenificiaryController::class, 'products'])
                 ->name('products');
 
 
-            Route::get('/create', [BeneficiaryController::class, 'create'])->name('create');
-            Route::post('/', [BeneficiaryController::class, 'store'])->name('store');
+            Route::get('/create', [BenificiaryController::class, 'create'])->name('create');
+            Route::post('/', [BenificiaryController::class, 'store'])->name('store');
 
             // just call ui
-            Route::get('/{beneficiary}/edit', [BeneficiaryController::class, 'edit'])->name('edit');
-            Route::put('/{beneficiary}', [BeneficiaryController::class, 'update'])->name('update');
+            Route::get('/{Benificiary}/edit', [BenificiaryController::class, 'edit'])->name('edit');
+            Route::put('/{Benificiary}', [BenificiaryController::class, 'update'])->name('update');
 
-            Route::delete('/{beneficiary}', [BeneficiaryController::class, 'delete'])->name('delete');
+            Route::delete('/{Benificiary}', [BenificiaryController::class, 'delete'])->name('delete');
 
 
         }
@@ -64,6 +65,20 @@ Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard'
 
 
 
+    Route::prefix('users')->name('users.')->group(
+        function () {
+            Route::get('/', [UserController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [UserController::class, 'create'])->name('create');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+
+            Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [UserController::class, 'update'])->name('update');
+
+            Route::delete('/{user}', [UserController::class, 'delete'])->name('delete');
+        }
+    );
 
 });
 

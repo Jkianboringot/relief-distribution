@@ -16,7 +16,7 @@ export default function AdminLayout({ title, children }: PropsWithChildren<{ tit
     return (
         <div className="flex min-h-screen bg-cream font-sans">
             <aside className="flex w-52 flex-shrink-0 flex-col gap-1 bg-gradient-to-b from-brand-orange to-brand-orange-hover px-3 py-4">
-                <div className="mb-3 px-2 text-lg font-extrabold text-white">MB</div>
+                <div className="mb-3 px-2 text-lg font-extrabold text-white">RELIEF_DISRIBUTION</div>
                 <nav className="flex flex-1 flex-col gap-1">
                     {navItems.map(({ label, href, icon: Icon }) => {
                         const active = currentPath.startsWith(href);

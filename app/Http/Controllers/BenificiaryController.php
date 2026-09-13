@@ -2,26 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\BeneficiaryRequest;
+use App\Http\Requests\BenificiaryRequest;
 use App\Models\Barangay;
-use App\Models\Beneficiary;
+use App\Models\Benificiary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-class BeneficiaryController extends Controller
+class BenificiaryController extends Controller
 {
-    public function delete(Beneficiary $beneficiary)
+    public function delete(Benificiary $Benificiary)
     {
         try {
-            $beneficiary->deleteOrFail();
+            $Benificiary->deleteOrFail();
         } catch (\Throwable $th) {
             Log::error($th);
-            return back()->with('error', 'Cannot delete this beneficiary because it has associated records');
+            return back()->with('error', 'Cannot delete this Benificiary because it has associated records');
         }
 
-        return redirect()->route('beneficiaries.index')->with('message', 'Beneficiary deleted');
+        return redirect()->route('beneficiaries.index')->with('message', 'Benificiary deleted');
     }
 
     public function create()
@@ -32,10 +32,10 @@ class BeneficiaryController extends Controller
         ]);
     }
 
-    public function store(BeneficiaryRequest $request)
+    public function store(BenificiaryRequest $request)
     {
         try {
-            Beneficiary::create([
+            Benificiary::create([
                 ...$request->validated(),
                 'qr_code' => $this->generateQrCode(),
                 'status' => 'unclaimed',
@@ -43,36 +43,36 @@ class BeneficiaryController extends Controller
             ]);
         } catch (\Throwable $th) {
             Log::error($th);
-            return back()->with('error', 'Failed to register beneficiary.');
+            return back()->with('error', 'Failed to register Benificiary.');
         }
 
-        return redirect()->route('beneficiaries.index')->with('message', 'Beneficiary Registered Successfully');
+        return redirect()->route('beneficiaries.index')->with('message', 'Benificiary Registered Successfully');
     }
 
-    public function edit(Beneficiary $beneficiary)
+    public function edit(Benificiary $Benificiary)
     {
         return Inertia::render('Beneficiaries/Edit', [
-            'beneficiary' => $beneficiary,
+            'Benificiary' => $Benificiary,
             'barangays' => Barangay::query()->orderBy('name')->get(['id', 'name']),
             'genders' => $this->genderOptions(),
         ]);
     }
 
-    public function update(BeneficiaryRequest $request, Beneficiary $beneficiary)
+    public function update(BenificiaryRequest $request, Benificiary $Benificiary)
     {
         try {
-            $beneficiary->update($request->validated());
+            $Benificiary->update($request->validated());
         } catch (\Throwable $th) {
             Log::error($th);
-            return back()->with('error', 'Failed to update Beneficiary.');
+            return back()->with('error', 'Failed to update Benificiary.');
         }
 
-        return redirect()->route('beneficiaries.index')->with('message', 'Beneficiary Updated Successfully');
+        return redirect()->route('beneficiaries.index')->with('message', 'Benificiary Updated Successfully');
     }
 
     public function index(Request $request)
     {
-        $beneficiaries = Beneficiary::query()
+        $beneficiaries = Benificiary::query()
             ->with('barangay:id,name')
             ->when($request->string('search')->trim(), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
@@ -103,7 +103,7 @@ class BeneficiaryController extends Controller
     {
         do {
             $code = strtoupper(Str::random(12));
-        } while (Beneficiary::where('qr_code', $code)->exists());
+        } while (Benificiary::where('qr_code', $code)->exists());
 
         return $code;
     }

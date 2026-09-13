@@ -91,7 +91,7 @@ export default function Login({ status }: { status?: string }) {
                     <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-orange">
                         <ShieldCheckIcon className="h-7 w-7 text-white" />
                     </div>
-                    <div className="text-lg font-bold tracking-tight text-ink">MB</div>
+                    <div className="text-lg font-bold tracking-tight text-ink">RELIEF_DISRIBUTION</div>
                     <div className="mt-1 text-sm text-subtle">Sign in to your account</div>
                 </div>
 

@@ -19,7 +19,7 @@ interface barangay {
     name: string;
 }
 
-interface beneficiary {
+interface Benificiary {
     id: number;
     first_name: string;
     middle_name: string | null;
@@ -32,7 +32,7 @@ interface beneficiary {
 }
 
 interface PaginatedBeneficiaries {
-    data: beneficiary[];
+    data: Benificiary[];
     links: { url: string | null; label: string; active: boolean }[];
 }
 
@@ -110,7 +110,7 @@ export default function Index() {
                     </h1>
                     <Link href={'/beneficiaries/create'}>
                         <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New Beneficiary
+                            New Benificiary
                         </Button>
                     </Link>
                 </div>
@@ -163,27 +163,27 @@ export default function Index() {
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {beneficiaries.data.map((beneficiary) => (
+                            {beneficiaries.data.map((Benificiary) => (
                                 <TableRow
-                                    key={beneficiary.id}
+                                    key={Benificiary.id}
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        {[beneficiary.first_name, beneficiary.middle_name, beneficiary.last_name]
+                                        {[Benificiary.first_name, Benificiary.middle_name, Benificiary.last_name]
                                             .filter(Boolean)
                                             .join(' ')}
                                     </TableCell>
-                                    <TableCell className="text-ink">{beneficiary.barangay.name}</TableCell>
-                                    <TableCell className="capitalize text-ink">{beneficiary.gender}</TableCell>
-                                    <TableCell className="text-ink">{beneficiary.household_members}</TableCell>
-                                    <TableCell className="font-mono text-xs text-subtle">{beneficiary.qr_code}</TableCell>
+                                    <TableCell className="text-ink">{Benificiary.barangay.name}</TableCell>
+                                    <TableCell className="capitalize text-ink">{Benificiary.gender}</TableCell>
+                                    <TableCell className="text-ink">{Benificiary.household_members}</TableCell>
+                                    <TableCell className="font-mono text-xs text-subtle">{Benificiary.qr_code}</TableCell>
                                     <TableCell>
-                                        <StatusBadge status={beneficiary.status} />
+                                        <StatusBadge status={Benificiary.status} />
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <Link
-                                                href={edit(beneficiary.id).url}
+                                                href={edit(Benificiary.id).url}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
                                             >
                                                 <Pencil className="h-4 w-4" />
@@ -194,8 +194,8 @@ export default function Index() {
                                                 disabled={processing}
                                                 onClick={() =>
                                                     handleDelete(
-                                                        beneficiary.id,
-                                                        [beneficiary.first_name, beneficiary.last_name].join(' '),
+                                                        Benificiary.id,
+                                                        [Benificiary.first_name, Benificiary.last_name].join(' '),
                                                     )
                                                 }
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"

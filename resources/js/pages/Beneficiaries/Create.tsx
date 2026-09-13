@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 import FlashAlerts from '@/components/flash-alerts';
 
-interface beneficiaryForm {
+interface BenificiaryForm {
     barangay_id: string;
     first_name: string;
     middle_name: string;
@@ -37,7 +37,7 @@ interface Props {
 
 export default function Create({ barangays, genders }: Props) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
-    const { data, setData, post, processing, errors } = useForm<beneficiaryForm>({
+    const { data, setData, post, processing, errors } = useForm<BenificiaryForm>({
         barangay_id: '',
         first_name: '',
         middle_name: '',
@@ -55,14 +55,14 @@ export default function Create({ barangays, genders }: Props) {
 
     return (
         <>
-            <Head title="Register New Beneficiary" />
+            <Head title="Register New Benificiary" />
 
             <div className="mx-auto w-full max-w-4xl p-6">
                 <FlashAlerts flash={flash} />
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-ink">New Beneficiary</h1>
+                    <h1 className="text-2xl font-bold text-ink">New Benificiary</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Register a beneficiary under a barangay.
+                        Register a Benificiary under a barangay.
                     </p>
                 </div>
 
@@ -233,7 +233,7 @@ export default function Create({ barangays, genders }: Props) {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Register Beneficiary
+                            Register Benificiary
                         </Button>
                     </div>
                 </form>
@@ -245,7 +245,7 @@ export default function Create({ barangays, genders }: Props) {
 Create.layout = {
     breadcrumbs: [
         {
-            title: 'Register New Beneficiary',
+            title: 'Register New Benificiary',
             href: '/beneficiaries/create',
         },
     ],

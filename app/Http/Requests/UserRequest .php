@@ -4,38 +4,31 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Role;
 
 class UserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $user = $this->route('user');
 
         return [
-            'name' => ['required', 'string', 'min:2', 'max:75'],
-            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user)],
-            'role' => ['required', Rule::in(['lgustaff', 'barangayofficial'])],
-            'barangay_id' => [
-                Rule::requiredIf(fn () => $this->input('role') === 'barangayofficial'),
-                'nullable',
-                Rule::exists('barangays', 'id'),
+            'name' => ['required', 'string', 'max:75'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:150',
+                Rule::unique('users', 'email')->ignore($user?->id),
             ],
-            // required on create, optional on update (leave blank to keep current password)
-            'password' => [$user ? 'nullable' : 'required', 'confirmed', Password::defaults()],
+            'role' => ['required', Rule::in(Role::pluck('name'))],
+            'barangay_id' => ['required_if:role,barangayofficial', 'nullable', 'exists:barangays,id'],
+            'password' => [$this->isMethod('post') ? 'required' : 'nullable', 'confirmed', 'min:8'],
         ];
     }
 }
