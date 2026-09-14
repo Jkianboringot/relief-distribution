@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique(); //index successfull, unique auto index
-            $table->foreignId('barangay_id')->constrained()->nullable();
+            $table->foreignId('barangay_id')->nullable()->constrained();
             $table->string('password');
 
             $table->rememberToken();

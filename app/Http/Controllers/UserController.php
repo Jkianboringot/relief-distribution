@@ -15,9 +15,15 @@ class UserController extends Controller
 {
     public function delete(User $user)
     {
+        // TODO: user cannot delete themselve, or others, the only one how has authority of delete is 
+        // first user or admin
+
+        
         if ($user->id === auth()->id()) {
             return back()->with('error', "You can't delete your own account.");
         }
+
+
 
         try {
             $user->deleteOrFail();
@@ -60,6 +66,10 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+
+        // TODO: user cannot edit themselve, or others, the only one how has authority of edit is 
+        // first user or admin
+
         $user->load('roles:id,name');
 
         return Inertia::render('Users/Edit', [
@@ -124,7 +134,7 @@ class UserController extends Controller
     {
         return Role::query()
             ->pluck('name')
-            ->map(fn ($name) => [
+            ->map(fn($name) => [
                 'value' => $name,
                 'label' => $name === 'lgustaff' ? 'LGU Staff' : 'Barangay Official',
             ])
