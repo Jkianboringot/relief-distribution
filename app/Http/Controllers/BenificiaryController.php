@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\BenificiaryRequest;
+use App\Http\Requests\BeneficiaryRequest;
 use App\Models\Barangay;
 use App\Models\Benificiary;
 use Illuminate\Http\Request;
@@ -32,7 +32,7 @@ class BenificiaryController extends Controller
         ]);
     }
 
-    public function store(BenificiaryRequest $request)
+    public function store(BeneficiaryRequest $request)
     {
         try {
             Benificiary::create([
@@ -58,7 +58,7 @@ class BenificiaryController extends Controller
         ]);
     }
 
-    public function update(BenificiaryRequest $request, Benificiary $Benificiary)
+    public function update(BeneficiaryRequest $request, Benificiary $Benificiary)
     {
         try {
             $Benificiary->update($request->validated());

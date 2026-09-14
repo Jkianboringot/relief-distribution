@@ -39,6 +39,16 @@ const mainNavItems: NavItem[] = [
         href: '/users',
         icon: User ,
     },
+      {
+        title: 'ReLief',
+        href: '/relief-packs',
+        icon: User ,
+    },
+      {
+        title: 'Distribution',
+        href: '/distribution',
+        icon: User ,
+    },
 
 
 ];

@@ -9,6 +9,9 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserController;
 use App\Models\barangay;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DistributionScheduleController;
+use App\Http\Controllers\DistributionTransactionController;
+use App\Http\Controllers\ReliefPackController;
 
 Route::redirect('/', 'dashboard')->name('home');
 
@@ -80,6 +83,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
         }
     );
 
+
+
+    Route::prefix('relief-packs')->name('relief-packs.')->group(
+
+        function () {
+            Route::get('/', [ReliefPackController::class, 'index'])->name('index');
+            Route::post('/', [ReliefPackController::class, 'store'])->name('store');
+            Route::post('/{reliefPack}/receive', [ReliefPackController::class, 'receiveStock'])->name('receive');
+            Route::get('/{reliefPack}/receipts', [ReliefPackController::class, 'receipts'])->name('receipts');
+        }
+
+    );
+
+
+    Route::prefix('distribution')->name('distribution.')->group(
+
+        function () {
+            Route::get('/', [DistributionScheduleController::class, 'index'])->name('index');
+            Route::get('/create', [DistributionScheduleController::class, 'create'])->name('create');
+            Route::post('/', [DistributionScheduleController::class, 'store'])->name('store');
+            Route::get('/{schedule}', [DistributionScheduleController::class, 'show'])->name('show');
+            Route::post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])->name('claim');
+
+        }
+    );
+    Route::prefix('distribution-transactions')->name('distribution-transactions.')->group(
+        function () {
+            Route::delete('/{transaction}', [DistributionTransactionController::class, 'destroy'])->name('destroy');
+        }
+    );
 });
 
 require __DIR__ . '/settings.php';

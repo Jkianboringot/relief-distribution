@@ -26,11 +26,11 @@ class RolePermissionSeeder extends Seeder
             'users.update',
             'users.delete',
 
-            // benificiaries
-            'benificiaries.view',
-            'benificiaries.create',
-            'benificiaries.update',
-            'benificiaries.delete',
+            // beneficiaries
+            'beneficiaries.view',
+            'beneficiaries.create',
+            'beneficiaries.update',
+            'beneficiaries.delete',
 
             // Inventory
             'inventory.view',
@@ -121,10 +121,10 @@ class RolePermissionSeeder extends Seeder
             'inventory.update',
             'inventory.delete',
 
-            'benificiaries.view',
-            'benificiaries.create',
-            'benificiaries.update',
-            'benificiaries.delete',
+            'beneficiaries.view',
+            'beneficiaries.create',
+            'beneficiaries.update',
+            'beneficiaries.delete',
 
             'reports.download',
             'analytics.dashboard'

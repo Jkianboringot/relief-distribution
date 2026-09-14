@@ -1,4 +1,4 @@
-import { Head, useForm ,usePage} from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,10 +11,7 @@ import FlashAlerts from '@/components/flash-alerts';
 
 interface barangayForm {
     name: string;
-    location: string|'';
 
-    // HACK - make this enum interface
-    barangay_type: string;
 }
 
 interface SelectOption {
@@ -23,19 +20,14 @@ interface SelectOption {
 }
 
 
-interface Props{
-    barangay_types:  SelectOption[];
-}
 
 
 
 
-export default function Create({ barangay_types }:Props) {
-     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
+export default function Create() {
+    const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
     const { data, setData, post, processing, errors } = useForm<barangayForm>({
         name: '',
-        location: '',
-        barangay_type: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -48,7 +40,7 @@ export default function Create({ barangay_types }:Props) {
             <Head title="Create New barangay" />
 
             <div className="mx-auto w-full  max-w-4xl p-6">
-                  <FlashAlerts flash={flash} />
+                <FlashAlerts flash={flash} />
                 <div className="mb-4">
                     <h1 className=" text-2xl font-bold text-ink">New barangay</h1>
                     <p className="mt-0.5 text-sm text-subtle">
@@ -75,7 +67,6 @@ export default function Create({ barangay_types }:Props) {
                     )}
 
 
-                    <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="name" className="font-semibold text-ink">
                                 barangay Name
@@ -94,43 +85,10 @@ export default function Create({ barangay_types }:Props) {
 
                         </div>
 
-                        <div className="space-y-1">
-                            <Label htmlFor="location" className="font-semibold text-ink">
-                                barangay Location
-                            </Label>
-                            <Input
-                                id="location"
-                                type='text'
-                                placeholder="barangay location"
-                                value={data.location}
-                                minLength={3}
-                                maxLength={100}
-                                onChange={(e) => setData('location', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.location && <p className="mt-1.5 text-sm text-danger">{errors.location}</p>}
-
-                        </div>
 
 
-                    </div>
 
-                    <div>
-                        <Label htmlFor="barangay_type">barangay Type</Label>
-                        <Select value={data.barangay_type || undefined} onValueChange={(value) => setData('barangay_type', value)}>
-                            <SelectTrigger id="barangay_type" className="mt-1.5 w-full bg-white sm:max-w-xs">
-                                <SelectValue placeholder="Select barangay type…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {barangay_types.map((v) => (
-                                    <SelectItem key={v.value} value={v.value}>
-                                        {v.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.barangay_type && <p className="mt-1.5 text-sm text-danger">{errors.barangay_type}</p>}
-                    </div>
+
 
 
                     <div className="flex justify-end border-t border-[#d1d5db] pt-3">

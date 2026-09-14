@@ -10,23 +10,25 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight, Pencil, Search, Trash2, X } from 'lucide-react';
-import { deleteMethod, index as barangaysIndex, edit, index } from '@/routes/barangays';
+import { ChevronLeft, ChevronRight, PackagePlus, Pencil, Search, Trash2, X } from 'lucide-react';
+import { deleteMethod, index as reliefPacksIndex, edit, index, showReceive } from '@/routes/relief-packs';
 import FlashAlerts from '@/components/flash-alerts';
 
-interface barangay {
+interface ReliefPack {
     id: number;
-    code: string;
     name: string;
+    description: string | null;
+    current_stock: number;
+    receipts_count: number;
 }
 
-interface Paginatedbarangays {
-    data: barangay[];
+interface PaginatedReliefPacks {
+    data: ReliefPack[];
     links: { url: string | null; label: string; active: boolean }[];
 }
 
 interface PageProps {
-    barangays: Paginatedbarangays;
+    reliefPacks: PaginatedReliefPacks;
     filters: { search?: string };
     flash: {
         message?: string;
@@ -34,16 +36,25 @@ interface PageProps {
     };
 }
 
-function BarangayTypeBadge({ type }: { type: string }) {
+function StockBadge({ stock }: { stock: number }) {
+    const isEmpty = stock === 0;
+    const isLow = stock > 0 && stock <= 10;
+
     return (
-        <span className="inline-flex items-center rounded-full border border-brand-orange/40 bg-[#d1d5db]  px-3 py-0.5 text-xs font-medium capitalize text-[#7a3b12]">
-            {type}
+        <span
+            className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-medium ${
+                isEmpty
+                    ? 'border-danger/40 bg-red-100 text-red-800'
+                    : isLow
+                      ? 'border-brand-orange/40 bg-[#fde8d7] text-[#7a3b12]'
+                      : 'border-emerald-400/40 bg-emerald-100 text-emerald-800'
+            }`}
+        >
+            {stock} {stock === 1 ? 'box' : 'boxes'}
         </span>
     );
 }
 
-// Laravel's paginator labels are always one of these three shapes —
-// render icons for prev/next instead of trusting raw HTML entities.
 function paginationLabel(label: string) {
     if (label.includes('Previous')) return <ChevronLeft className="h-4 w-4" />;
     if (label.includes('Next')) return <ChevronRight className="h-4 w-4" />;
@@ -51,22 +62,16 @@ function paginationLabel(label: string) {
 }
 
 export default function Index() {
-    const { flash, barangays, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
+    const { flash, reliefPacks, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
     const { processing, delete: destroyForm } = useForm();
     const [search, setSearch] = useState(filters?.search ?? '');
 
-    // Debounced: typing only updates local state immediately. The actual
-    // request to the server waits until 400ms after the user stops typing.
-    // Guarded against firing when `search` already matches what the server
-    // returned — this is what keeps StrictMode's duplicate effect call (and
-    // any other redundant re-fire) from silently resetting pagination back
-    // to page 1 with an empty search.
     useEffect(() => {
         if (search === (filters?.search ?? '')) return;
 
         const timeout = setTimeout(() => {
             router.get(
-                barangaysIndex().url,
+                reliefPacksIndex().url,
                 { search },
                 { preserveState: true, replace: true },
             );
@@ -80,27 +85,26 @@ export default function Index() {
         router.get(index().url, {}, { preserveState: true, replace: true });
     }
 
-
-    const handleDelete = (id: number, location: string) => {
-        if (confirm(`Delete "${location}"? This can't be undone.`)) {
+    const handleDelete = (id: number, name: string) => {
+        if (confirm(`Delete "${name}"? This can't be undone.`)) {
             destroyForm(deleteMethod(id).url);
         }
     };
 
     return (
         <>
-            <Head title="barangays" />
+            <Head title="Relief Packs" />
 
             <div className="p-6">
                 <FlashAlerts flash={flash} />
 
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
-                        barangays
+                        Relief Packs (Boxes)
                     </h1>
-                    <Link href={'/barangays/create'}>
+                    <Link href={'/relief-packs/create'}>
                         <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New barangay
+                            New Box Type
                         </Button>
                     </Link>
                 </div>
@@ -112,15 +116,9 @@ export default function Index() {
                             <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search"
+                                placeholder="Search by box name"
                                 className="w-56 border-brand-orange/40 bg-white pl-9 text-sm"
                             />
-                            {search.length >= 100 && (
-
-                                <p className="absolute left-0 top-full mb-10 text-xs text-danger">
-                                    Search can't be longer than 100 characters.
-                                </p>
-                            )}
                             {search && (
                                 <button
                                     type="button"
@@ -136,41 +134,44 @@ export default function Index() {
 
                     <Table>
                         <TableHeader>
-                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    Code
-                                </TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    Name
-                                </TableHead>
-
+                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db] hover:bg-[#d1d5db]">
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Box Name</TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Description</TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Current Stock</TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Receipts</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {barangays.data.length === 0 && (
+                            {reliefPacks.data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-10 text-center text-sm text-subtle">
-                                        No barangays found.
+                                    <TableCell colSpan={5} className="py-10 text-center text-sm text-subtle">
+                                        No box types found.
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {barangays.data.map((barangay) => (
+                            {reliefPacks.data.map((pack) => (
                                 <TableRow
-                                    key={barangay.id}
-                                    className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] "
+                                    key={pack.id}
+                                    className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                 >
-                                    <TableCell className="font-medium text-[#7a3b12]">
-                                        {barangay.code}
+                                    <TableCell className="font-medium text-[#7a3b12]">{pack.name}</TableCell>
+                                    <TableCell className="text-ink">{pack.description ?? '—'}</TableCell>
+                                    <TableCell>
+                                        <StockBadge stock={pack.current_stock} />
                                     </TableCell>
-                                   <TableCell className="font-medium text-[#7a3b12]">
-                                        {barangay.name}
-                                    </TableCell>
-                                  
+                                    <TableCell className="text-ink">{pack.receipts_count}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <Link
-                                                href={edit(barangay.id).url}
+                                                href={showReceive(pack.id).url}
+                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
+                                            >
+                                                <PackagePlus className="h-4 w-4" />
+                                                Receive
+                                            </Link>
+                                            <Link
+                                                href={edit(pack.id).url}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
                                             >
                                                 <Pencil className="h-4 w-4" />
@@ -179,7 +180,7 @@ export default function Index() {
                                             <button
                                                 type="button"
                                                 disabled={processing}
-                                                onClick={() => handleDelete(barangay.id, barangay.name)}
+                                                onClick={() => handleDelete(pack.id, pack.name)}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -192,16 +193,17 @@ export default function Index() {
                         </TableBody>
                     </Table>
 
-                    {barangays.links.length > 3 && (
+                    {reliefPacks.links.length > 3 && (
                         <div className="flex gap-1 border-t border-[#d1d5db] px-5 py-3">
-                            {barangays.links.map((link, i) => (
+                            {reliefPacks.links.map((link, i) => (
                                 <Link
                                     key={i}
                                     href={link.url ?? '#'}
-                                    className={`flex items-center rounded-md px-3 py-1 text-sm ${link.active
-                                        ? 'bg-brand-orange text-white'
-                                        : 'text-brand-orange-hover hover:bg-[#d1d5db] '
-                                        } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
+                                    className={`flex items-center rounded-md px-3 py-1 text-sm ${
+                                        link.active
+                                            ? 'bg-brand-orange text-white'
+                                            : 'text-brand-orange-hover hover:bg-[#d1d5db]'
+                                    } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
                                 >
                                     {paginationLabel(link.label)}
                                 </Link>
@@ -217,8 +219,8 @@ export default function Index() {
 Index.layout = {
     breadcrumbs: [
         {
-            title: 'barangays',
-            href: '/barangays',
+            title: 'Relief Packs',
+            href: '/relief-packs',
         },
     ],
 };

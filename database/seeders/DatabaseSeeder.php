@@ -19,13 +19,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call([
-            BarangaySeeder::class,
+            BarangaySeeder::class,      // <- new
+
             UserSeeder::class,
             RolePermissionSeeder::class,
-            BenificiarySeeder::class,
+            ReliefPackSeeder::class,
+            PackReceiptSeeder::class,
+            BeneficiarySeeder::class,
+            DistributionScheduleSeeder::class,
+            DistributionTransactionSeeder::class,
+        ]);
 
-            ]
-        );
-    
     }
 }

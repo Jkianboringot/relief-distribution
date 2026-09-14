@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class BenificiaryRequest extends FormRequest
+class BeneficiaryRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

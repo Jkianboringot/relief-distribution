@@ -11,7 +11,7 @@ class Benificiary extends Model
 {
     use HasFactory;
 
-    protected $table = 'benificiaries';
+    protected $table = 'beneficiaries';
 
     protected $fillable = [
         'barangay_id',

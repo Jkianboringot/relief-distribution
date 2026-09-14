@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Enum;
 use Inertia\Inertia;
-use Str;
+use Illuminate\Support\Str;
 
 class BarangayController extends Controller
 {
@@ -41,12 +41,19 @@ class BarangayController extends Controller
         return Inertia::render('Barangays/Create');
     }
 
-    public function store(barangayRequest $request)
+    public function store(BarangayRequest $request)
     {
 
         try {
+            NOTE:
+            // this code will be use for benificiary verification, it will be brycode+benificaryCode
+            $code = Str::upper(Str::random(11));
+            $data = $request->validated();
 
-            barangay::create($request->validated());
+            Barangay::create([
+                'name' => $data['name'],
+                'code' => $code,
+            ]);
 
         } catch (\Throwable $th) {
             Log::error($th);
