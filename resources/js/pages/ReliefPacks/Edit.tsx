@@ -2,44 +2,40 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CircleAlert } from 'lucide-react';
-import { update } from '@/routes/relief-packs';
+import { store } from '@/routes/relief-packs';
+
 import FlashAlerts from '@/components/flash-alerts';
 
-interface ReliefPack {
-    id: number;
+interface reliefPackForm {
     name: string;
-    description: string | null;
-    current_stock: number;
+    description: string;
 }
 
-interface Props {
-    reliefPack: ReliefPack;
-}
-
-export default function Edit({ reliefPack }: Props) {
+export default function Create() {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
-    const { data, setData, put, processing, errors } = useForm({
-        name: reliefPack.name,
-        description: reliefPack.description ?? '',
+    const { data, setData, post, processing, errors } = useForm<reliefPackForm>({
+        name: '',
+        description: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(update(reliefPack.id).url);
+        post(store().url);
     };
 
     return (
         <>
-            <Head title="Edit Box Type" />
+            <Head title="New Box Type" />
 
             <div className="mx-auto w-full max-w-2xl p-6">
                 <FlashAlerts flash={flash} />
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-ink">Edit Box Type</h1>
+                    <h1 className="text-2xl font-bold text-ink">New Box Type</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Update details for "{reliefPack.name}". Current stock: {reliefPack.current_stock} boxes.
+                        Define a relief pack that stock can be received against.
                     </p>
                 </div>
 
@@ -81,16 +77,16 @@ export default function Edit({ reliefPack }: Props) {
                         <Label htmlFor="description" className="font-semibold text-ink">
                             Description
                         </Label>
-                        <Input
+                        <Textarea
                             id="description"
-                            type="text"
-                            placeholder="What's inside this box (optional)"
+                            placeholder="What's included in this box (optional)"
                             value={data.description}
-                            maxLength={500}
                             onChange={(e) => setData('description', e.target.value)}
                             className="border-[#e0d0c0]"
                         />
-                        {errors.description && <p className="mt-1.5 text-sm text-danger">{errors.description}</p>}
+                        {errors.description && (
+                            <p className="mt-1.5 text-sm text-danger">{errors.description}</p>
+                        )}
                     </div>
 
                     <div className="flex justify-end border-t border-[#d1d5db] pt-3">
@@ -99,7 +95,7 @@ export default function Edit({ reliefPack }: Props) {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Save Changes
+                            Create Box Type
                         </Button>
                     </div>
                 </form>
@@ -108,10 +104,15 @@ export default function Edit({ reliefPack }: Props) {
     );
 }
 
-Edit.layout = {
+Create.layout = {
     breadcrumbs: [
         {
-            title: 'Edit Box Type',
+            title: 'Relief Packs',
+            href: '/relief-packs',
+        },
+        {
+            title: 'New Box Type',
+            href: '/relief-packs/create',
         },
     ],
 };

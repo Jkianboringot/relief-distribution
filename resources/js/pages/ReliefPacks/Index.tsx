@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,8 +10,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight, PackagePlus, Pencil, Search, Trash2, X } from 'lucide-react';
-import { deleteMethod, index as reliefPacksIndex, edit, index, showReceive } from '@/routes/relief-packs';
+import { Pencil, Search, Trash2, X } from 'lucide-react';
+import { deleteMethod, edit } from '@/routes/relief-packs';
 import FlashAlerts from '@/components/flash-alerts';
 
 interface ReliefPack {
@@ -22,14 +22,8 @@ interface ReliefPack {
     receipts_count: number;
 }
 
-interface PaginatedReliefPacks {
-    data: ReliefPack[];
-    links: { url: string | null; label: string; active: boolean }[];
-}
-
 interface PageProps {
-    reliefPacks: PaginatedReliefPacks;
-    filters: { search?: string };
+    reliefPacks: ReliefPack[];
     flash: {
         message?: string;
         error?: string;
@@ -55,35 +49,16 @@ function StockBadge({ stock }: { stock: number }) {
     );
 }
 
-function paginationLabel(label: string) {
-    if (label.includes('Previous')) return <ChevronLeft className="h-4 w-4" />;
-    if (label.includes('Next')) return <ChevronRight className="h-4 w-4" />;
-    return label;
-}
-
 export default function Index() {
-    const { flash, reliefPacks, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
+    const { flash, reliefPacks } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
+    const [search, setSearch] = useState('');
     const { processing, delete: destroyForm } = useForm();
-    const [search, setSearch] = useState(filters?.search ?? '');
 
-    useEffect(() => {
-        if (search === (filters?.search ?? '')) return;
-
-        const timeout = setTimeout(() => {
-            router.get(
-                reliefPacksIndex().url,
-                { search },
-                { preserveState: true, replace: true },
-            );
-        }, 400);
-
-        return () => clearTimeout(timeout);
-    }, [search, filters?.search]);
-
-    function clearSearch() {
-        setSearch('');
-        router.get(index().url, {}, { preserveState: true, replace: true });
-    }
+    const filteredPacks = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (!query) return reliefPacks;
+        return reliefPacks.filter((pack) => pack.name.toLowerCase().includes(query));
+    }, [reliefPacks, search]);
 
     const handleDelete = (id: number, name: string) => {
         if (confirm(`Delete "${name}"? This can't be undone.`)) {
@@ -122,7 +97,7 @@ export default function Index() {
                             {search && (
                                 <button
                                     type="button"
-                                    onClick={clearSearch}
+                                    onClick={() => setSearch('')}
                                     aria-label="Clear search"
                                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-subtle hover:text-brand-orange"
                                 >
@@ -143,14 +118,14 @@ export default function Index() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {reliefPacks.data.length === 0 && (
+                            {filteredPacks.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="py-10 text-center text-sm text-subtle">
                                         No box types found.
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {reliefPacks.data.map((pack) => (
+                            {filteredPacks.map((pack) => (
                                 <TableRow
                                     key={pack.id}
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
@@ -163,13 +138,6 @@ export default function Index() {
                                     <TableCell className="text-ink">{pack.receipts_count}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
-                                            <Link
-                                                href={showReceive(pack.id).url}
-                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
-                                            >
-                                                <PackagePlus className="h-4 w-4" />
-                                                Receive
-                                            </Link>
                                             <Link
                                                 href={edit(pack.id).url}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
@@ -192,24 +160,6 @@ export default function Index() {
                             ))}
                         </TableBody>
                     </Table>
-
-                    {reliefPacks.links.length > 3 && (
-                        <div className="flex gap-1 border-t border-[#d1d5db] px-5 py-3">
-                            {reliefPacks.links.map((link, i) => (
-                                <Link
-                                    key={i}
-                                    href={link.url ?? '#'}
-                                    className={`flex items-center rounded-md px-3 py-1 text-sm ${
-                                        link.active
-                                            ? 'bg-brand-orange text-white'
-                                            : 'text-brand-orange-hover hover:bg-[#d1d5db]'
-                                    } ${!link.url ? 'pointer-events-none opacity-40' : ''}`}
-                                >
-                                    {paginationLabel(link.label)}
-                                </Link>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
         </>

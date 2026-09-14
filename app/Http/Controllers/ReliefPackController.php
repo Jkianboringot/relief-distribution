@@ -6,6 +6,7 @@ use App\Models\PackReceipt;
 use App\Models\ReliefPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,6 +23,11 @@ class ReliefPackController extends Controller
         ]);
     }
 
+    public function create(): Response
+    {
+        return Inertia::render('ReliefPacks/Create');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -31,7 +37,26 @@ class ReliefPackController extends Controller
 
         ReliefPack::create($validated);
 
-        return redirect()->back()->with('success', 'Box type created.');
+        return redirect()->route('relief-packs.index')->with('success', 'Box type created.');
+    }
+
+    public function edit(ReliefPack $reliefPack): Response
+    {
+        return Inertia::render('ReliefPacks/Edit', [
+            'reliefPack' => $reliefPack->only(['id', 'name', 'description']),
+        ]);
+    }
+
+    public function update(Request $request, ReliefPack $reliefPack)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $reliefPack->update($validated);
+
+        return redirect()->route('relief-packs.index')->with('success', 'Box type updated.');
     }
 
     /**
@@ -72,5 +97,17 @@ class ReliefPackController extends Controller
             'reliefPack' => $reliefPack,
             'receipts' => $receipts,
         ]);
+    }
+
+    public function delete(ReliefPack $reliefPack)
+    {
+        try {
+            $reliefPack->deleteOrFail();
+        } catch (\Throwable $th) {
+            Log::error($th);
+            return back()->with('error', 'Cannot delete this box type because it has associated receipts.');
+        }
+
+        return redirect()->route('relief-packs.index')->with('success', 'Box type deleted.');
     }
 }

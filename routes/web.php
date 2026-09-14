@@ -90,8 +90,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         function () {
             Route::get('/', [ReliefPackController::class, 'index'])->name('index');
             Route::post('/', [ReliefPackController::class, 'store'])->name('store');
+            Route::get('/create', [ReliefPackController::class, 'create'])->name('create');
+            Route::get('/{reliefPack}/edit', [ReliefPackController::class, 'edit'])->name('edit');
+            Route::put('/{reliefPack}', [ReliefPackController::class, 'update'])->name('update');
             Route::post('/{reliefPack}/receive', [ReliefPackController::class, 'receiveStock'])->name('receive');
             Route::get('/{reliefPack}/receipts', [ReliefPackController::class, 'receipts'])->name('receipts');
+            Route::delete('/{reliefPack}', [ReliefPackController::class, 'delete'])->name('delete');
+
         }
 
     );

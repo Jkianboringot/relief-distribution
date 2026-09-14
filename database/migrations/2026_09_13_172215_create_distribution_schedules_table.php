@@ -8,6 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+
+        // will act as the transfer between lgu and barangay
         Schema::create('distribution_schedules', function (Blueprint $table) {
             $table->id();
             $table->string('title');

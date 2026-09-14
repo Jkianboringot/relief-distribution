@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // e.g. "Family Food Pack"
             $table->text('description')->nullable();
-            $table->unsignedInteger('current_stock')->default(0); // boxes on hand
             $table->timestamps();
         });
     }

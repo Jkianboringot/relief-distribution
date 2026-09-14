@@ -40,11 +40,11 @@ class DistributionTransactionSeeder extends Seeder
                     DB::transaction(function () use ($beneficiary, $schedule, $verifier) {
                         $reliefPack = $schedule->reliefPack;
 
-                        if (method_exists($reliefPack, 'decrementStock')) {
-                            $reliefPack->decrementStock(1);
-                        } else {
-                            $reliefPack->decrement('current_stock', 1);
-                        }
+                        // if (method_exists($reliefPack, 'decrementStock')) {
+                        //     $reliefPack->decrementStock(1);
+                        // } else {
+                        //     $reliefPack->decrement('current_stock', 1);
+                        // }
 
                         $schedule->transactions()->create([
                             'beneficiary_id' => $beneficiary->id,

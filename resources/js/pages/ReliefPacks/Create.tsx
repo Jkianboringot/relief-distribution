@@ -2,50 +2,23 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CircleAlert } from 'lucide-react';
-import { store } from '@/routes/beneficiaries';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { store } from '@/routes/relief-packs';
 
 import FlashAlerts from '@/components/flash-alerts';
 
-interface BenificiaryForm {
-    barangay_id: string;
-    first_name: string;
-    middle_name: string;
-    last_name: string;
-    birthdate: string;
-    gender: string;
-    address: string;
-    household_members: string;
-}
-
-interface SelectOption {
-    value: string;
-    label: string;
-}
-
-interface barangay {
-    id: number;
+interface reliefPackForm {
     name: string;
+    description: string;
 }
 
-interface Props {
-    barangays: barangay[];
-    genders: SelectOption[];
-}
-
-export default function Create({ barangays, genders }: Props) {
+export default function Create() {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
-    const { data, setData, post, processing, errors } = useForm<BenificiaryForm>({
-        barangay_id: '',
-        first_name: '',
-        middle_name: '',
-        last_name: '',
-        birthdate: '',
-        gender: '',
-        address: '',
-        household_members: '',
+    const { data, setData, post, processing, errors } = useForm<reliefPackForm>({
+        name: '',
+        description: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -55,14 +28,14 @@ export default function Create({ barangays, genders }: Props) {
 
     return (
         <>
-            <Head title="Register New Benificiary" />
+            <Head title="New Box Type" />
 
-            <div className="mx-auto w-full max-w-4xl p-6">
+            <div className="mx-auto w-full max-w-2xl p-6">
                 <FlashAlerts flash={flash} />
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-ink">New Benificiary</h1>
+                    <h1 className="text-2xl font-bold text-ink">New Box Type</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Register a Benificiary under a barangay.
+                        Define a relief pack that stock can be received against.
                     </p>
                 </div>
 
@@ -84,147 +57,36 @@ export default function Create({ barangays, genders }: Props) {
                         </Alert>
                     )}
 
-                    <div>
-                        <Label htmlFor="barangay_id">Barangay</Label>
-                        <Select
-                            value={data.barangay_id || undefined}
-                            onValueChange={(value) => setData('barangay_id', value)}
-                        >
-                            <SelectTrigger id="barangay_id" className="mt-1.5 w-full bg-white sm:max-w-xs">
-                                <SelectValue placeholder="Select barangay…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {barangays.map((b) => (
-                                    <SelectItem key={b.id} value={String(b.id)}>
-                                        {b.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.barangay_id && <p className="mt-1.5 text-sm text-danger">{errors.barangay_id}</p>}
+                    <div className="space-y-1">
+                        <Label htmlFor="name" className="font-semibold text-ink">
+                            Box Name
+                        </Label>
+                        <Input
+                            id="name"
+                            type="text"
+                            placeholder="e.g. Family Food Pack"
+                            value={data.name}
+                            maxLength={255}
+                            onChange={(e) => setData('name', e.target.value)}
+                            className="border-[#e0d0c0]"
+                        />
+                        {errors.name && <p className="mt-1.5 text-sm text-danger">{errors.name}</p>}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="space-y-1">
-                            <Label htmlFor="first_name" className="font-semibold text-ink">
-                                First Name
-                            </Label>
-                            <Input
-                                id="first_name"
-                                type="text"
-                                placeholder="First name"
-                                value={data.first_name}
-                                maxLength={75}
-                                onChange={(e) => setData('first_name', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.first_name && <p className="mt-1.5 text-sm text-danger">{errors.first_name}</p>}
-                        </div>
-
-                        <div className="space-y-1">
-                            <Label htmlFor="middle_name" className="font-semibold text-ink">
-                                Middle Name
-                            </Label>
-                            <Input
-                                id="middle_name"
-                                type="text"
-                                placeholder="Middle name (optional)"
-                                value={data.middle_name}
-                                maxLength={75}
-                                onChange={(e) => setData('middle_name', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.middle_name && <p className="mt-1.5 text-sm text-danger">{errors.middle_name}</p>}
-                        </div>
-
-                        <div className="space-y-1">
-                            <Label htmlFor="last_name" className="font-semibold text-ink">
-                                Last Name
-                            </Label>
-                            <Input
-                                id="last_name"
-                                type="text"
-                                placeholder="Last name"
-                                value={data.last_name}
-                                maxLength={75}
-                                onChange={(e) => setData('last_name', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.last_name && <p className="mt-1.5 text-sm text-danger">{errors.last_name}</p>}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label htmlFor="birthdate" className="font-semibold text-ink">
-                                Birthdate
-                            </Label>
-                            <Input
-                                id="birthdate"
-                                type="date"
-                                value={data.birthdate}
-                                onChange={(e) => setData('birthdate', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.birthdate && <p className="mt-1.5 text-sm text-danger">{errors.birthdate}</p>}
-                        </div>
-
-                        <div>
-                            <Label htmlFor="gender">Gender</Label>
-                            <Select
-                                value={data.gender || undefined}
-                                onValueChange={(value) => setData('gender', value)}
-                            >
-                                <SelectTrigger id="gender" className="mt-1.5 w-full bg-white">
-                                    <SelectValue placeholder="Select gender…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {genders.map((g) => (
-                                        <SelectItem key={g.value} value={g.value}>
-                                            {g.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.gender && <p className="mt-1.5 text-sm text-danger">{errors.gender}</p>}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label htmlFor="address" className="font-semibold text-ink">
-                                Address
-                            </Label>
-                            <Input
-                                id="address"
-                                type="text"
-                                placeholder="Complete address"
-                                value={data.address}
-                                maxLength={150}
-                                onChange={(e) => setData('address', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.address && <p className="mt-1.5 text-sm text-danger">{errors.address}</p>}
-                        </div>
-
-                        <div className="space-y-1">
-                            <Label htmlFor="household_members" className="font-semibold text-ink">
-                                Household Members
-                            </Label>
-                            <Input
-                                id="household_members"
-                                type="number"
-                                min={1}
-                                max={50}
-                                placeholder="Number of household members"
-                                value={data.household_members}
-                                onChange={(e) => setData('household_members', e.target.value)}
-                                className="border-[#e0d0c0]"
-                            />
-                            {errors.household_members && (
-                                <p className="mt-1.5 text-sm text-danger">{errors.household_members}</p>
-                            )}
-                        </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="description" className="font-semibold text-ink">
+                            Description
+                        </Label>
+                        <Textarea
+                            id="description"
+                            placeholder="What's included in this box (optional)"
+                            value={data.description}
+                            onChange={(e) => setData('description', e.target.value)}
+                            className="border-[#e0d0c0]"
+                        />
+                        {errors.description && (
+                            <p className="mt-1.5 text-sm text-danger">{errors.description}</p>
+                        )}
                     </div>
 
                     <div className="flex justify-end border-t border-[#d1d5db] pt-3">
@@ -233,7 +95,7 @@ export default function Create({ barangays, genders }: Props) {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Register Benificiary
+                            Create Box Type
                         </Button>
                     </div>
                 </form>
@@ -245,8 +107,12 @@ export default function Create({ barangays, genders }: Props) {
 Create.layout = {
     breadcrumbs: [
         {
-            title: 'Register New Benificiary',
-            href: '/beneficiaries/create',
+            title: 'Relief Packs',
+            href: '/relief-packs',
+        },
+        {
+            title: 'New Box Type',
+            href: '/relief-packs/create',
         },
     ],
 };

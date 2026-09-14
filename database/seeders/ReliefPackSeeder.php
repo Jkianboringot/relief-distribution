@@ -43,7 +43,6 @@ class ReliefPackSeeder extends Seeder
                 ['name' => $pack['name']],
                 [
                     'description' => $pack['description'],
-                    'current_stock' => 0,
                 ]
             );
         }
