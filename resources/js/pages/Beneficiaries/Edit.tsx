@@ -4,15 +4,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CircleAlert } from 'lucide-react';
-import { update } from '@/routes/barangays';
+import { update } from '@/routes/beneficiaries';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import FlashAlerts from '@/components/flash-alerts';
 
-interface barangay {
-    id: number;
-    name: string;
-    code: string;
-
+interface BenificiaryForm {
+    barangay_id: string;
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    birthdate: string;
+    gender: string;
+    address: string;
+    household_members: string;
 }
 
 interface SelectOption {
@@ -20,40 +25,59 @@ interface SelectOption {
     label: string;
 }
 
-
-interface Props {
-    barangays: barangay;
+interface barangay {
+    id: number;
+    name: string;
 }
 
+interface benificiary {
+    id: number;
+    barangay_id: number;
+    first_name: string;
+    middle_name: string | null;
+    last_name: string;
+    birthdate: string;
+    gender: string;
+    address: string;
+    household_members: number;
+}
 
+interface Props {
+    Benificiary: benificiary;
+    barangays: barangay[];
+    genders: SelectOption[];
+}
 
-
-export default function Edit({ barangays }: Props) {
-    // HACK - useForm should have type
-    const { data, setData, put, processing, errors } = useForm({
-        name: barangays.name,
-        code: barangays.code,
+export default function Edit({ Benificiary, barangays, genders }: Props) {
+    const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
+    const { data, setData, put, processing, errors } = useForm<BenificiaryForm>({
+        barangay_id: String(Benificiary.barangay_id),
+        first_name: Benificiary.first_name,
+        middle_name: Benificiary.middle_name ?? '',
+        last_name: Benificiary.last_name,
+        birthdate: Benificiary.birthdate?.slice(0, 10) ?? '',
+        gender: Benificiary.gender,
+        address: Benificiary.address,
+        household_members: String(Benificiary.household_members),
     });
-      const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(update(barangays.id).url);
+        put(update(Benificiary.id).url);
     };
 
     return (
         <>
-            <Head title="Edit barangay" />
+            <Head title="Edit Benificiary" />
 
-            <div className="mx-auto w-full  max-w-4xl p-6">
-                 <FlashAlerts flash={flash} />
+            <div className="mx-auto w-full max-w-4xl p-6">
+                <FlashAlerts flash={flash} />
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-ink">Edit Product</h1>
+                    <h1 className="text-2xl font-bold text-ink">Edit Benificiary</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Update details for "{barangays.name}".
+                        Update details for "{Benificiary.first_name} {Benificiary.last_name}".
                     </p>
                 </div>
-
 
                 <form
                     onSubmit={handleSubmit}
@@ -73,45 +97,148 @@ export default function Edit({ barangays }: Props) {
                         </Alert>
                     )}
 
+                    <div>
+                        <Label htmlFor="barangay_id">Barangay</Label>
+                        <Select
+                            value={data.barangay_id || undefined}
+                            onValueChange={(value) => setData('barangay_id', value)}
+                        >
+                            <SelectTrigger id="barangay_id" className="mt-1.5 w-full bg-white sm:max-w-xs">
+                                <SelectValue placeholder="Select barangay…" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {barangays.map((b) => (
+                                    <SelectItem key={b.id} value={String(b.id)}>
+                                        {b.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.barangay_id && <p className="mt-1.5 text-sm text-danger">{errors.barangay_id}</p>}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="first_name" className="font-semibold text-ink">
+                                First Name
+                            </Label>
+                            <Input
+                                id="first_name"
+                                type="text"
+                                placeholder="First name"
+                                value={data.first_name}
+                                maxLength={75}
+                                onChange={(e) => setData('first_name', e.target.value)}
+                                className="border-[#e0d0c0]"
+                            />
+                            {errors.first_name && <p className="mt-1.5 text-sm text-danger">{errors.first_name}</p>}
+                        </div>
+
+                        <div className="space-y-1">
+                            <Label htmlFor="middle_name" className="font-semibold text-ink">
+                                Middle Name
+                            </Label>
+                            <Input
+                                id="middle_name"
+                                type="text"
+                                placeholder="Middle name (optional)"
+                                value={data.middle_name}
+                                maxLength={75}
+                                onChange={(e) => setData('middle_name', e.target.value)}
+                                className="border-[#e0d0c0]"
+                            />
+                            {errors.middle_name && <p className="mt-1.5 text-sm text-danger">{errors.middle_name}</p>}
+                        </div>
+
+                        <div className="space-y-1">
+                            <Label htmlFor="last_name" className="font-semibold text-ink">
+                                Last Name
+                            </Label>
+                            <Input
+                                id="last_name"
+                                type="text"
+                                placeholder="Last name"
+                                value={data.last_name}
+                                maxLength={75}
+                                onChange={(e) => setData('last_name', e.target.value)}
+                                className="border-[#e0d0c0]"
+                            />
+                            {errors.last_name && <p className="mt-1.5 text-sm text-danger">{errors.last_name}</p>}
+                        </div>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                            <Label htmlFor="name" className="font-semibold text-ink">
-                                Barangay Name
+                            <Label htmlFor="birthdate" className="font-semibold text-ink">
+                                Birthdate
                             </Label>
                             <Input
-                                id="name"
-                                type='text'
-                                placeholder="Barangay name"
-                                value={data.name}
-                                minLength={3}
-                                maxLength={75}
-                                onChange={(e) => setData('name', e.target.value)}
+                                id="birthdate"
+                                type="date"
+                                value={data.birthdate}
+                                onChange={(e) => setData('birthdate', e.target.value)}
                                 className="border-[#e0d0c0]"
                             />
-                            {errors.name && <p className="mt-1.5 text-sm text-danger">{errors.name}</p>}
-
+                            {errors.birthdate && <p className="mt-1.5 text-sm text-danger">{errors.birthdate}</p>}
                         </div>
-                         <div className="space-y-1">
-                            <Label htmlFor="code" className="font-semibold text-ink">
-                                Barangay Code
+
+                        <div>
+                            <Label htmlFor="gender">Gender</Label>
+                            <Select
+                                value={data.gender || undefined}
+                                onValueChange={(value) => setData('gender', value)}
+                            >
+                                <SelectTrigger id="gender" className="mt-1.5 w-full bg-white">
+                                    <SelectValue placeholder="Select gender…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {genders.map((g) => (
+                                        <SelectItem key={g.value} value={g.value}>
+                                            {g.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.gender && <p className="mt-1.5 text-sm text-danger">{errors.gender}</p>}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="address" className="font-semibold text-ink">
+                                Address
                             </Label>
                             <Input
-                                id="code"
-                                type='text'
-                                placeholder="Code"
-                                value={data.code}
-                                minLength={3}
-                                maxLength={75}
-                                onChange={(e) => setData('code', e.target.value)}
+                                id="address"
+                                type="text"
+                                placeholder="Complete address"
+                                value={data.address}
+                                maxLength={150}
+                                onChange={(e) => setData('address', e.target.value)}
                                 className="border-[#e0d0c0]"
                             />
-                            {errors.code && <p className="mt-1.5 text-sm text-danger">{errors.code}</p>}
-
-                        </div>
+                            {errors.address && <p className="mt-1.5 text-sm text-danger">{errors.address}</p>}
                         </div>
 
-                       
+                        <div className="space-y-1">
+                            <Label htmlFor="household_members" className="font-semibold text-ink">
+                                Household Members
+                            </Label>
+                            <Input
+                                id="household_members"
+                                type="number"
+                                min={1}
+                                max={50}
+                                placeholder="Number of household members"
+                                value={data.household_members}
+                                onChange={(e) => setData('household_members', e.target.value)}
+                                className="border-[#e0d0c0]"
+                            />
+                            {errors.household_members && (
+                                <p className="mt-1.5 text-sm text-danger">{errors.household_members}</p>
+                            )}
+                        </div>
+                    </div>
 
                     <div className="flex justify-end border-t border-[#d1d5db] pt-3">
                         <Button
@@ -119,7 +246,7 @@ export default function Edit({ barangays }: Props) {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Save barangay
+                            Save Benificiary
                         </Button>
                     </div>
                 </form>
@@ -131,7 +258,7 @@ export default function Edit({ barangays }: Props) {
 Edit.layout = {
     breadcrumbs: [
         {
-            title: 'Edit  barangay',
+            title: 'Edit Benificiary',
         },
     ],
 };

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\barangayType;
 use App\Http\Requests\barangayRequest;
 use App\Models\barangay;
+use App\Models\Barangay as ModelsBarangay;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -47,8 +48,10 @@ class BarangayController extends Controller
         try {
             NOTE:
             // this code will be use for benificiary verification, it will be brycode+benificaryCode
-            $code = Str::upper(Str::random(11));
             $data = $request->validated();
+            do {
+                $code = strtoupper(Str::random(12));
+            } while (Barangay::where('code', $code)->exists());
 
             Barangay::create([
                 'name' => $data['name'],

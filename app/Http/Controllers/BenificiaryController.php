@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Gender;
 use App\Http\Requests\BeneficiaryRequest;
 use App\Models\Barangay;
 use App\Models\Benificiary;
@@ -35,9 +36,11 @@ class BenificiaryController extends Controller
     public function store(BeneficiaryRequest $request)
     {
         try {
+            $validated = $request->validated();
+
             Benificiary::create([
-                ...$request->validated(),
-                'qr_code' => $this->generateQrCode(),
+                ...$validated,
+                'qr_code' => $this->generateQrCode($validated['barangay_id']),
                 'status' => 'unclaimed',
                 'registered_by' => $request->user()->id,
             ]);
@@ -80,7 +83,7 @@ class BenificiaryController extends Controller
                         ->orWhere('last_name', 'like', "{$search}%");
                 });
             })
-            ->when($request->integer('barangay_id'), fn ($query, $barangayId) => $query->where('barangay_id', $barangayId))
+            ->when($request->integer('barangay_id'), fn($query, $barangayId) => $query->where('barangay_id', $barangayId))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -94,17 +97,22 @@ class BenificiaryController extends Controller
     protected function genderOptions(): array
     {
         return [
-            ['value' => 'male', 'label' => 'Male'],
-            ['value' => 'female', 'label' => 'Female'],
+            ['value' => Gender::Male->value, 'label' => 'Male'],
+            ['value' => Gender::Female->value, 'label' => 'Female'],
         ];
     }
 
-    protected function generateQrCode(): string
+    protected function generateQrCode($id): string
     {
+        // NOTE:no need to validated here since it is validated already when it was givin, and since its protected
+        // nothing can call it outside
+        $b = Barangay::findOrFail($id)->code;
         do {
-            $code = strtoupper(Str::random(12));
-        } while (Benificiary::where('qr_code', $code)->exists());
+            $beneficiaryCode = strtoupper(Str::random(12));
+            $qrCode = $b . '-' . $beneficiaryCode;
+        } while (Benificiary::where('qr_code', $qrCode)->exists());
 
-        return $code;
+        return $qrCode;
+
     }
 }
