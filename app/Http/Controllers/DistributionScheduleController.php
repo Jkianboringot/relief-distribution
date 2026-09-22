@@ -12,7 +12,10 @@ class DistributionScheduleController extends Controller
 {
     public function index(): Response
     {
-        $schedules = DistributionSchedule::with('reliefPack:id,name,current_stock')
+        $schedules = DistributionSchedule::with(['reliefPack' => function ($query) {
+                $query->select('id', 'name')
+                    ->withSum('receipts as current_stock', 'quantity_received');
+            }])
             ->withCount(['transactions as claimed_count' => function ($query) {
                 $query->where('status', 'claimed');
             }])
@@ -27,7 +30,9 @@ class DistributionScheduleController extends Controller
     public function create(): Response
     {
         return Inertia::render('Distribution/Create', [
-            'reliefPacks' => ReliefPack::select('id', 'name', 'current_stock')->get(),
+            'reliefPacks' => ReliefPack::select('id', 'name')
+                ->withSum('receipts as current_stock', 'quantity_received')
+                ->get(),
         ]);
     }
 
@@ -62,7 +67,10 @@ class DistributionScheduleController extends Controller
     public function show(DistributionSchedule $schedule): Response
     {
         $schedule->load([
-            'reliefPack:id,name,current_stock',
+            'reliefPack' => function ($query) {
+                $query->select('id', 'name')
+                    ->withSum('receipts as current_stock', 'quantity_received');
+            },
             'transactions.beneficiary:id,family_head_name,barangay,family_size',
             'transactions.verifiedBy:id,name',
         ]);

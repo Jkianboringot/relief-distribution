@@ -34,20 +34,22 @@ const mainNavItems: NavItem[] = [
         href: '/beneficiaries',
         icon: FolderGit2,
     },
+
+
+    {
+        title: 'Distribution',
+        href: '/distribution',
+        icon: University,
+    },
+    {
+        title: 'Relief',
+        href: '/relief-packs',
+        icon: Package,
+    },
     {
         title: 'Users',
         href: '/users',
-        icon: User ,
-    },
-      {
-        title: 'ReLief',
-        href: '/relief-packs',
-        icon: Package  ,
-    },
-      {
-        title: 'Distribution',
-        href: '/distribution',
-        icon: University  ,
+        icon: User,
     },
 
 

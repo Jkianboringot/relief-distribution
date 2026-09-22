@@ -13,13 +13,12 @@ class ReliefPack extends Model
     protected $fillable = [
         'name',
         'description',
-        'current_stock',
     ];
 
-    public function receipts(): HasMany
-    {
-        return $this->hasMany(PackReceipt::class);
-    }
+   public function receipts(): HasMany
+{
+    return $this->hasMany(PackReceipt::class);
+}
 
     public function schedules(): HasMany
     {

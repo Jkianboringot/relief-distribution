@@ -193,7 +193,7 @@ export default function Create({ barangays, genders }: Props) {
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label htmlFor="address" className="font-semibold text-ink">
-                                Address
+                                Street address
                             </Label>
                             <Input
                                 id="address"

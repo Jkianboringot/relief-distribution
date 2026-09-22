@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\DB;
 class PackReceiptSeeder extends Seeder
 {
     /**
-     * Mirrors ReliefPackController::receiveStock — every receipt row is
-     * paired with a call to ReliefPack::incrementStock() so current_stock
-     * always agrees with the sum of its receipts (minus anything claimed
-     * later by DistributionTransactionSeeder).
+     * Mirrors ReliefPackController::receiveStock — every receipt row records
+     * a quantity received for a relief pack. Available stock is derived from
+     * the sum of receipts (minus anything claimed later by
+     * DistributionTransactionSeeder), not stored on the pack itself.
      */
     public function run(): void
     {
@@ -33,12 +33,12 @@ class PackReceiptSeeder extends Seeder
 
                 DB::transaction(function () use ($reliefPack, $sources, $receiver, $quantity, $dateReceived) {
                     PackReceipt::create([
+                        'relief_pack_id' => $reliefPack->id,
                         'source_name' => fake()->randomElement($sources),
+                        'quantity_received' => $quantity,
                         'date_received' => $dateReceived,
                         'received_by' => $receiver->id,
                     ]);
-
-                   
                 });
             }
         });
