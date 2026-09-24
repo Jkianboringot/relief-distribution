@@ -26,6 +26,12 @@ class DistributionSchedule extends Model
         'date' => 'date',
     ];
 
+
+    // TODO:remove this later after deployed shit is fix
+    public function receipts()
+    {
+        return $this->hasMany(PackReceipt::class, 'relief_pack_id');
+    }
     public function reliefPack(): BelongsTo
     {
         return $this->belongsTo(ReliefPack::class);
