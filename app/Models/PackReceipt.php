@@ -22,9 +22,9 @@ class PackReceipt extends Model
         'date_received' => 'date',
     ];
 
-    public function reliefPack(): BelongsTo
+    public function reliefStock()
     {
-        return $this->belongsTo(ReliefPack::class);
+        return $this->hasMany(ReliefStock::class);
     }
 
     public function receivedBy(): BelongsTo

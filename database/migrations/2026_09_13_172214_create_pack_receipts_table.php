@@ -9,7 +9,6 @@ return new class extends Migration {
     {
         Schema::create('pack_receipts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('relief_pack_id')->constrained('relief_packs');
             $table->string('source_name'); // DSWD, Provincial Office, Municipal LGU, Donation
             $table->unsignedInteger('quantity_received');
             $table->date('date_received');

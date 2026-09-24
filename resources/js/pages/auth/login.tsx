@@ -155,8 +155,8 @@ export default function Login({ status }: { status?: string }) {
                     </button>
                 </form>
 
-                {/* <div className="mt-4 text-center">
-                    <a href="/forgot-password" className="text-sm font-medium text-brand-orange hover:underline">
+                <div className="mt-4 text-center">
+                    {/* <a href="/forgot-password" className="text-sm font-medium text-brand-orange hover:underline">
                         Forgot Password?
                     </a> */}
                 </div>
