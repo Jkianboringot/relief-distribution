@@ -11,6 +11,7 @@ use App\Models\Barangay;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DistributionScheduleController;
 use App\Http\Controllers\DistributionTransactionController;
+use App\Http\Controllers\PackReceiptController;
 use App\Http\Controllers\ReliefPackController;
 
 Route::redirect('/', 'dashboard')->name('home');
@@ -91,7 +92,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 
-    Route::prefix('relief-packs')->name('relief-packs.')->group(
+    Route::prefix('pack-receipts')->name('pack-receipts.')->group(
+
+        function () {
+            Route::get('/', [PackReceiptController::class, 'index'])->name('index');
+            Route::post('/', [PackReceiptController::class, 'store'])->name('store');
+            Route::get('/create', [PackReceiptController::class, 'create'])->name('create');
+            Route::get('/{receipt}/edit', [PackReceiptController::class, 'edit'])->name('edit');
+            Route::put('/{receipt}', [PackReceiptController::class, 'update'])->name('update');
+            Route::delete('/{receipt}', [PackReceiptController::class, 'delete'])->name('delete');
+
+        }
+
+    );
+
+     Route::prefix('relief-packs')->name('relief-packs.')->group(
 
         function () {
             Route::get('/', [ReliefPackController::class, 'index'])->name('index');

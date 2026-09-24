@@ -36,7 +36,7 @@ class ReliefPackController extends Controller
 
         ReliefPack::create($validated);
 
-        return redirect()->route('relief-packs.index')->with('success', 'Box type created.');
+        return redirect()->route('relief-packs.index')->with('message', 'Box type created.');
     }
 
     public function edit(ReliefPack $reliefPack): Response
@@ -66,7 +66,6 @@ class ReliefPackController extends Controller
     {
         $validated = $request->validate([
             'source_name' => 'required|string|max:255',
-            'quantity_received' => 'required|integer|min:1',
             'date_received' => 'required|date',
         ]);
 
@@ -74,12 +73,10 @@ class ReliefPackController extends Controller
             PackReceipt::create([
                 'relief_pack_id' => $reliefPack->id,
                 'source_name' => $validated['source_name'],
-                'quantity_received' => $validated['quantity_received'],
                 'date_received' => $validated['date_received'],
                 'received_by' => $request->user()->id,
             ]);
 
-            $reliefPack->incrementStock($validated['quantity_received']);
         });
 
         return redirect()->back()->with('success', 'Boxes received and added to stock.');

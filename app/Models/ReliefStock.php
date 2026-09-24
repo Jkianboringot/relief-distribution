@@ -11,12 +11,12 @@ class ReliefStock extends Model
     
     public function reliefPack()
     {
-        return $this->belongsTo(ReliefPack::class);
+        return $this->belongsTo(ReliefPack::class,'relief_pack_id');
     }
 
     public function packReceipt()
     {
-        return $this->hasMany(PackReceipt::class);
+        return $this->hasMany(PackReceipt::class,'pack_receipt_id');
     }
 
 }

@@ -9,9 +9,8 @@ return new class extends Migration {
     {
         Schema::create('pack_receipts', function (Blueprint $table) {
             $table->id();
-            $table->string('source_name'); // DSWD, Provincial Office, Municipal LGU, Donation
+            $table->string('source_name',150); // DSWD, Provincial Office, Municipal LGU, Donation
             // TODO::remove this
-            // $table->unsignedInteger('quantity_received');
             $table->date('date_received');
             $table->foreignId('received_by')->constrained('users');
             $table->timestamps();

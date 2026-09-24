@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PackReceiptRequest;
 use App\Models\PackReceipt;
 use App\Models\ReliefPack;
+use App\Services\ReliefStockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -12,10 +14,16 @@ use Inertia\Response;
 
 class PackReceiptController extends Controller
 {
+    
+    public function __construct(protected ReliefStockService $relief_stock)
+    {
+        // throw new \Exception('Not implemented');
+    }
+
     public function index(): Response
     {
         $packReceipts = PackReceipt::withCount('reliefStock')
-            ->orderBy('name')
+            ->orderBy('source_name')
             ->get();
 
         return Inertia::render('PackReceipts/Index', [
@@ -32,19 +40,33 @@ class PackReceiptController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(PackReceiptRequest $request)
     {
-        $validated = $request->validated();
+        $data = $request->validated();
+        // dd($request,$data);
 
-        PackReceipt::create($validated);
+        $rl=$this->relief_stock->reliefStockStore([
+            'receipt'=>[
+                'source_name'=>$data['source_name'],
+                'date_received'=>$data['date_received']
+            ],
+            'reliefList'=>$data['reliefList']
+        ]);
 
-        return redirect()->route('relief-packs.index')->with('success', 'Box type created.');
+        if(!$rl){
+            return back()->with('error','Failed to record Relief Stock');
+        }
+
+        return redirect()->route('pack-receipts.index')->with('message', 'Successfully record Relief Stock');
     }
 
     public function edit(PackReceipt $packReceipt): Response
     {
+     $data=$packReceipt->with('reliefStock.reliefPack')
+            ->only(['id', 'name', 'description']);
         return Inertia::render('PackReceipts/Edit', [
-            'packReceipt' => $packReceipt->only(['id', 'name', 'description']),
+            'packReceipts' =>$data ,
+            // 'relief_packs'=>$data->reliefStock()
         ]);
     }
 
@@ -60,45 +82,8 @@ class PackReceiptController extends Controller
         return redirect()->route('relief-packs.index')->with('success', 'Box type updated.');
     }
 
-    /**
-     * Record a receipt of boxes (e.g. from DSWD, Provincial Office).
-     * This is the only way current_stock goes up.
-     */
-    public function receiveStock(Request $request, PackReceipt $packReceipt)
-    {
-        $validated = $request->validate([
-            'source_name' => 'required|string|max:255',
-            'quantity_received' => 'required|integer|min:1',
-            'date_received' => 'required|date',
-        ]);
+ 
 
-        DB::transaction(function () use ($packReceipt, $validated, $request) {
-            PackReceipt::create([
-                'relief_pack_id' => $packReceipt->id,
-                'source_name' => $validated['source_name'],
-                'quantity_received' => $validated['quantity_received'],
-                'date_received' => $validated['date_received'],
-                'received_by' => $request->user()->id,
-            ]);
-
-            $packReceipt->incrementStock($validated['quantity_received']);
-        });
-
-        return redirect()->back()->with('success', 'Boxes received and added to stock.');
-    }
-
-    public function receipts(PackReceipt $packReceipt): Response
-    {
-        $receipts = $packReceipt->receipts()
-            ->with('receivedBy:id,name')
-            ->latest('date_received')
-            ->get();
-
-        return Inertia::render('PackReceipts/Receipts', [
-            'packReceipt' => $packReceipt,
-            'receipts' => $receipts,
-        ]);
-    }
 
     public function delete(PackReceipt $packReceipt)
     {

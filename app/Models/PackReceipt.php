@@ -13,7 +13,6 @@ class PackReceipt extends Model
     protected $fillable = [
         'relief_pack_id',
         'source_name',
-        'quantity_received',
         'date_received',
         'received_by',
     ];

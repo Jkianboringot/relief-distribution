@@ -14,8 +14,12 @@ class PackReceiptRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'source_name' => ['required', 'string', 'max:150'],
+            'date_received' => ['date'],
+
+            'reliefList' => ['required', 'array', 'max:999', 'min:1'],
+            'reliefList.*.relief_pack_id' => ['required', 'exists:relief_packs,id'],
+            'reliefList.*.quantity' => ['required', 'max:999', 'min:1', 'numeric'],
         ];
     }
 }

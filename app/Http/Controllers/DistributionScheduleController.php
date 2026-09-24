@@ -29,7 +29,6 @@ class DistributionScheduleController extends Controller
     {
         return Inertia::render('Distribution/Create', [
             'reliefPacks' => ReliefPack::select('id', 'name')
-                ->withSum('receipts as current_stock', 'quantity_received')
                 ->get(),
         ]);
     }
@@ -47,11 +46,11 @@ class DistributionScheduleController extends Controller
 
         $reliefPack = ReliefPack::findOrFail($validated['relief_pack_id']);
 
-        if ($reliefPack->current_stock < $validated['planned_quantity']) {
-            return redirect()->back()->withErrors([
-                'planned_quantity' => 'Not enough boxes in stock for this allocation.',
-            ]);
-        }
+        // if ($reliefPack->current_stock < $validated['planned_quantity']) {
+        //     return redirect()->back()->withErrors([
+        //         'planned_quantity' => 'Not enough boxes in stock for this allocation.',
+        //     ]);
+        // }
 
         DistributionSchedule::create([
             ...$validated,
@@ -66,8 +65,7 @@ class DistributionScheduleController extends Controller
     {
         $schedule->load([
             'reliefPack' => function ($query) {
-                $query->select('id', 'name')
-                    ->withSum('receipts as current_stock', 'quantity_received');
+                $query->select('id', 'name');
             },
             'transactions.beneficiary:id,family_head_name,barangay,family_size',
             'transactions.verifiedBy:id,name',

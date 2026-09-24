@@ -34,7 +34,6 @@ class PackReceiptSeeder extends Seeder
                 DB::transaction(function () use ($reliefPack, $sources, $receiver, $quantity, $dateReceived) {
                     PackReceipt::create([
                         'source_name' => fake()->randomElement($sources),
-                        'quantity_received' => $quantity,
                         'date_received' => $dateReceived,
                         'received_by' => $receiver->id,
                     ]);
