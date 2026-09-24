@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Enums\Gender;
 use App\Http\Requests\BeneficiaryRequest;
 use App\Models\Barangay;
+use App\Models\Beneficiary;
 use App\Models\Benificiary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-
+use Illuminate\Http\Response as HttpResponse;
 class BenificiaryController extends Controller
 {
     public function delete(Benificiary $Benificiary)
@@ -114,5 +115,17 @@ class BenificiaryController extends Controller
 
         return $qrCode;
 
+    }
+
+   public function qr(Beneficiary $beneficiary): HttpResponse
+    {
+        return response($beneficiary->generateQrCode(), 200)
+            ->header('Content-Type', 'image/png');
+    }
+ 
+    // This is what the QR code points to. For now it just answers.
+    public function scan(string $qrCode): HttpResponse
+    {
+        return response('scaned');
     }
 }

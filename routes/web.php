@@ -15,6 +15,10 @@ use App\Http\Controllers\ReliefPackController;
 
 Route::redirect('/', 'dashboard')->name('home');
 
+Route::get('/scan/{qr_code}', [BenificiaryController::class, 'scan'])
+    ->name('beneficiaries.scan');
+
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -61,7 +65,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/{Benificiary}', [BenificiaryController::class, 'update'])->name('update');
 
             Route::delete('/{Benificiary}', [BenificiaryController::class, 'delete'])->name('delete');
-
+            // inside your auth group
+            Route::get('/{beneficiary}/qr', [BenificiaryController::class, 'qr'])
+                ->name('qr');
 
         }
     );

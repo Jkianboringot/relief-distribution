@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
+import { jsPDF } from 'jspdf';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight, Pencil, Search, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pencil, QrCode, Search, Trash2, X } from 'lucide-react';
 import { deleteMethod, index as beneficiariesIndex, edit, index } from '@/routes/beneficiaries';
 import FlashAlerts from '@/components/flash-alerts';
 
@@ -45,6 +47,10 @@ interface PageProps {
     };
 }
 
+function fullName(b: Benificiary) {
+    return [b.first_name, b.middle_name, b.last_name].filter(Boolean).join(' ');
+}
+
 function StatusBadge({ status }: { status: string }) {
     const isClaimed = status === 'claimed';
 
@@ -71,6 +77,7 @@ export default function Index() {
     const { flash, beneficiaries, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
     const { processing, delete: destroyForm } = useForm();
     const [search, setSearch] = useState(filters?.search ?? '');
+    const [qrBusyId, setQrBusyId] = useState<number | null>(null);
 
     useEffect(() => {
         if (search === (filters?.search ?? '')) return;
@@ -89,6 +96,49 @@ export default function Index() {
     function clearSearch() {
         setSearch('');
         router.get(index().url, {}, { preserveState: true, replace: true });
+    }
+
+    // Builds a one-page PDF with the beneficiary's QR code, entirely in the
+    // browser (qrcode makes the image, jsPDF lays out the page) — no PHP
+    // image library or GD needed. The QR encodes /scan/{qr_code}.
+    async function openQrPdf(b: Benificiary) {
+        setQrBusyId(b.id);
+        // Open the tab right inside the click so popup blockers allow it.
+        const tab = window.open('', '_blank');
+
+        try {
+            const scanUrl = `${window.location.origin}/scan/${b.qr_code}`;
+            const qrPng = await QRCode.toDataURL(scanUrl, { width: 600, margin: 1 });
+
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const size = 100;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(20);
+            doc.text(fullName(b), pageW / 2, 30, { align: 'center' });
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.text(b.barangay.name, pageW / 2, 40, { align: 'center' });
+
+            doc.addImage(qrPng, 'PNG', (pageW - size) / 2, 55, size, size);
+
+            doc.setFont('courier', 'normal');
+            doc.setFontSize(9);
+            doc.text(b.qr_code, pageW / 2, 55 + size + 10, { align: 'center' });
+
+            if (tab) {
+                tab.location.href = String(doc.output('bloburl'));
+            } else {
+                doc.save(`qr-${b.id}.pdf`);
+            }
+        } catch {
+            tab?.close();
+            alert("Couldn't generate the QR PDF.");
+        } finally {
+            setQrBusyId(null);
+        }
     }
 
     const handleDelete = (id: number, name: string) => {
@@ -169,9 +219,7 @@ export default function Index() {
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        {[Benificiary.first_name, Benificiary.middle_name, Benificiary.last_name]
-                                            .filter(Boolean)
-                                            .join(' ')}
+                                        {fullName(Benificiary)}
                                     </TableCell>
                                     <TableCell className="text-ink">{Benificiary.barangay.name}</TableCell>
                                     <TableCell className="capitalize text-ink">{Benificiary.gender}</TableCell>
@@ -182,6 +230,15 @@ export default function Index() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
+                                            <button
+                                                type="button"
+                                                disabled={qrBusyId === Benificiary.id}
+                                                onClick={() => openQrPdf(Benificiary)}
+                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange disabled:opacity-50"
+                                            >
+                                                <QrCode className="h-4 w-4" />
+                                                QR
+                                            </button>
                                             <Link
                                                 href={edit(Benificiary.id).url}
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
