@@ -55,17 +55,7 @@ use HasRoles;
 
     public function barangay(): BelongsTo
     {
-        return $this->belongsTo(barangay::class);
+        return $this->belongsTo(Barangay::class);
     }
 
-    public function inventory()
-    {
-        return $this->hasOne(Inventory::class);
-
-    }
-     public function sales()
-    {
-        return $this->hasMany(Sale::class,'encoder_id');
-
-    }
-}
+ }
