@@ -59,11 +59,12 @@ export default function Index() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
                         Distribution Schedules
                     </h1>
-                    <Link href={'/distribution/create'}>
+                    {/* <Link href={'/distribution/create'}> */}
                         <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New Schedule
+                            New schedule
+                            <small>(DISALBLED) - working progess</small>
                         </Button>
-                    </Link>
+                    {/* </Link> */}
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">

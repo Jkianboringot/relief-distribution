@@ -5,8 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CircleAlert } from 'lucide-react';
-import { store } from '@/routes/relief-packs';
-
+import { update } from '@/routes/relief-packs';
 import FlashAlerts from '@/components/flash-alerts';
 
 interface reliefPackForm {
@@ -14,28 +13,37 @@ interface reliefPackForm {
     description: string;
 }
 
-export default function Create() {
+interface EditProps {
+    reliefPack: {
+        id: number;
+        name: string;
+        description: string | null;
+    };
+}
+
+export default function Edit({ reliefPack }: EditProps) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
-    const { data, setData, post, processing, errors } = useForm<reliefPackForm>({
-        name: '',
-        description: '',
+
+    const { data, setData, put, processing, errors } = useForm<reliefPackForm>({
+        name: reliefPack.name,
+        description: reliefPack.description ?? '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(store().url);
+        put(update(reliefPack.id).url);
     };
 
     return (
         <>
-            <Head title="New Box Type" />
-
+            <Head title="Edit Box Type" />
             <div className="mx-auto w-full max-w-2xl p-6">
                 <FlashAlerts flash={flash} />
+
                 <div className="mb-4">
-                    <h1 className="text-2xl font-bold text-ink">New Box Type</h1>
+                    <h1 className="text-2xl font-bold text-ink">Edit Box Type</h1>
                     <p className="mt-0.5 text-sm text-subtle">
-                        Define a relief pack that stock can be received against.
+                        Update the details for this relief pack.
                     </p>
                 </div>
 
@@ -95,7 +103,7 @@ export default function Create() {
                             disabled={processing}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
-                            Create Box Type
+                            Save Changes
                         </Button>
                     </div>
                 </form>
@@ -104,15 +112,9 @@ export default function Create() {
     );
 }
 
-Create.layout = {
+Edit.layout = {
     breadcrumbs: [
-        {
-            title: 'Relief Packs',
-            href: '/relief-packs',
-        },
-        {
-            title: 'New Box Type',
-            href: '/relief-packs/create',
-        },
+        { title: 'Relief Packs', href: '/relief-packs' },
+        { title: 'Edit Box Type', href: '/relief-packs/edit' },
     ],
 };
