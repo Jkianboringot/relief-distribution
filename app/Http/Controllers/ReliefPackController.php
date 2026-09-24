@@ -74,7 +74,7 @@ class ReliefPackController extends Controller
             PackReceipt::create([
                 'relief_pack_id' => $reliefPack->id,
                 'source_name' => $validated['source_name'],
-                // 'quantity_received' => $validated['quantity_received'],
+                'quantity_received' => $validated['quantity_received'],
                 'date_received' => $validated['date_received'],
                 'received_by' => $request->user()->id,
             ]);
