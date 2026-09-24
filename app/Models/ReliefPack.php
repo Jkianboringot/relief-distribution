@@ -15,12 +15,15 @@ class ReliefPack extends Model
         'description',
     ];
 
-  
+   public function receipts(): HasMany
+{
+    return $this->hasMany(PackReceipt::class);
+}
+
     public function reliefStock()
     {
         return $this->hasMany(ReliefStock::class);
     }
-
     public function schedules(): HasMany
     {
         return $this->hasMany(DistributionSchedule::class);

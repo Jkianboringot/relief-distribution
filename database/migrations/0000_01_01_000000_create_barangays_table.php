@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('barangays', function (Blueprint $table) {
             $table->id();
 
-            $table->string('code',12)->unique();
+            $table->string('code',75)->unique();
             $table->string('name',75)->unique(); 
             
             $table->timestamps();

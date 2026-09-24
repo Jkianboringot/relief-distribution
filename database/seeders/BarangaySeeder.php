@@ -359,7 +359,7 @@ class BarangaySeeder extends Seeder
         foreach (self::BARANGAYS as $municipality => $names) {
             foreach ($names as $name) {
                 Barangay::firstOrCreate(
-                    ['code' => Str::slug($municipality . ' ' . $name)],
+                    ['code' => Str::slug($name)],
                     ['name' => $name],
                 );
             }
