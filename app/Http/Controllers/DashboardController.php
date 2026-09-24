@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\barangay;
+use App\Models\Barangay;
 use Inertia\Inertia;
 
 class DashboardController extends Controller

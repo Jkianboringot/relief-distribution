@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\InOutType;
 use App\Enums\StockMovementType;
-use App\Models\barangay;
+use App\Models\Barangay;
 use App\Models\Barangay as ModelsBarangay;
 use App\Models\Inventory;
 use App\Models\StockMovement;

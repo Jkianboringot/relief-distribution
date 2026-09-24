@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\InOutType;
-use App\Models\barangay;
+use App\Models\Barangay;
 use App\Models\Inventory;
 use App\Models\Sale;
 use Error;

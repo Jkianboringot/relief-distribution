@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\barangayType;
 use App\Http\Requests\barangayRequest;
-use App\Models\barangay;
+use App\Models\Barangay;
 use App\Models\Barangay as ModelsBarangay;
 use App\Models\Sale;
 use Illuminate\Http\Request;

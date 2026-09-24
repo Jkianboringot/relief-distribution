@@ -7,7 +7,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserController;
-use App\Models\barangay;
+use App\Models\Barangay;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DistributionScheduleController;
 use App\Http\Controllers\DistributionTransactionController;

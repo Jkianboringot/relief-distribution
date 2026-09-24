@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\barangay;
+use App\Models\Barangay;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
