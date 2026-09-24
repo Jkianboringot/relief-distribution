@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Barangay;
-use App\Models\Beneficiary;
+use App\Models\Benificiary;
 use App\Models\DistributionSchedule;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -25,7 +25,7 @@ class DistributionTransactionSeeder extends Seeder
                     return;
                 }
 
-                $candidates = Beneficiary::where('barangay_id', $barangay->id)
+                $candidates = Benificiary::where('barangay_id', $barangay->id)
                     ->where('status', 'unclaimed')
                     ->inRandomOrder()
                     ->get();
@@ -36,7 +36,7 @@ class DistributionTransactionSeeder extends Seeder
                     $candidates->count()
                 );
 
-                $candidates->take($claimCount)->each(function (Beneficiary $beneficiary) use ($schedule, $verifier) {
+                $candidates->take($claimCount)->each(function (Benificiary $beneficiary) use ($schedule, $verifier) {
                     DB::transaction(function () use ($beneficiary, $schedule, $verifier) {
                         $reliefPack = $schedule->reliefPack;
 

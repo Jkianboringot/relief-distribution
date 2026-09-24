@@ -30,7 +30,7 @@ class DistributionTransaction extends Model
 
     public function beneficiary(): BelongsTo
     {
-        return $this->belongsTo(Beneficiary::class);
+        return $this->belongsTo(Benificiary::class);
     }
 
     public function verifiedBy(): BelongsTo

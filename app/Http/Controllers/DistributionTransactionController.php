@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Beneficiary;
+use App\Models\Benificiary;
 use App\Models\DistributionSchedule;
 use App\Models\DistributionTransaction;
 use Illuminate\Http\Request;
@@ -26,7 +26,7 @@ class DistributionTransactionController extends Controller
             'qr_code' => 'required|string|exists:beneficiaries,qr_code',
         ]);
 
-        $beneficiary = Beneficiary::where('qr_code', $validated['qr_code'])->firstOrFail();
+        $beneficiary = Benificiary::where('qr_code', $validated['qr_code'])->firstOrFail();
 
         if ($beneficiary->eligibility_status !== 'eligible') {
             throw ValidationException::withMessages([

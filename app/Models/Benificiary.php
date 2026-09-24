@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Benificiary extends Model
@@ -61,7 +62,7 @@ class Benificiary extends Model
     {
         // qr_code is NOT NULL + unique, so every beneficiary gets an
         // unguessable token the moment it's created.
-        static::creating(function (Beneficiary $beneficiary) {
+        static::creating(function (Benificiary $beneficiary) {
             if (empty($beneficiary->qr_code)) {
                 $beneficiary->qr_code = (string) Str::uuid();
             }
@@ -89,4 +90,19 @@ class Benificiary extends Model
  
         return $result->getString();
     }
+
+
+     public function distributionTransactions(): HasMany
+    {
+        return $this->hasMany(DistributionTransaction::class);
+    }
+
+    public function hasClaimedFor(int $scheduleId): bool
+    {
+        return $this->distributionTransactions()
+            ->where('distribution_schedule_id', $scheduleId)
+            ->exists();
+    }
+
+   
 }

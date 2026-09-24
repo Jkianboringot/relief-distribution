@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\Gender;
 use App\Http\Requests\BeneficiaryRequest;
 use App\Models\Barangay;
-use App\Models\Beneficiary;
 use App\Models\Benificiary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -117,7 +116,7 @@ class BenificiaryController extends Controller
 
     }
 
-   public function qr(Beneficiary $beneficiary): HttpResponse
+   public function qr(Benificiary $beneficiary): HttpResponse
     {
         return response($beneficiary->generateQrCode(), 200)
             ->header('Content-Type', 'image/png');

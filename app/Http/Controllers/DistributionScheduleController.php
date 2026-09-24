@@ -13,9 +13,7 @@ class DistributionScheduleController extends Controller
     public function index(): Response
     {
         $schedules = DistributionSchedule::with(['reliefPack' => function ($query) {
-                $query->select('id', 'name')
-                    ->withSum('receipts as current_stock', 'quantity_received');
-            }])
+                $query->select('id', 'name');}])
             ->withCount(['transactions as claimed_count' => function ($query) {
                 $query->where('status', 'claimed');
             }])
