@@ -155,10 +155,10 @@ export default function Login({ status }: { status?: string }) {
                     </button>
                 </form>
 
-                <div className="mt-4 text-center">
+                {/* <div className="mt-4 text-center">
                     <a href="/forgot-password" className="text-sm font-medium text-brand-orange hover:underline">
                         Forgot Password?
-                    </a>
+                    </a> */}
                 </div>
 
                 <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-subtle">
