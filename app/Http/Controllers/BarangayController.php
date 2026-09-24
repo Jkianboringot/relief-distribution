@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\barangayType;
-use App\Http\Requests\barangayRequest;
+use App\Enums\BarangayType;
+use App\Http\Requests\BarangayRequest;
 use App\Models\Barangay;
 use App\Models\Barangay as ModelsBarangay;
 use App\Models\Sale;
@@ -21,7 +21,7 @@ class BarangayController extends Controller
     //     barangay::findOrFail($request->id)->deleteOrFail();
     //     return redirect()->route('barangays.index')->with('message', 'barangay Delete Successfully');
     // }
-    public function delete(barangay $barangay)
+    public function delete(Barangay $barangay)
     {
         try {
 
@@ -69,7 +69,7 @@ class BarangayController extends Controller
 
 
 
-    public function edit(barangay $barangay)
+    public function edit(Barangay $barangay)
     {
         // $p = barangay::findOrFail($barangay->id);
         // dd($barangay);
@@ -81,7 +81,7 @@ class BarangayController extends Controller
 
 
 
-    public function update(barangayRequest $request, barangay $barangay)
+    public function update(BarangayRequest $request, Barangay $barangay)
     {
 
 

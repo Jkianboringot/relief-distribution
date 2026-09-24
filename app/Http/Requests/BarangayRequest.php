@@ -26,7 +26,7 @@ class BarangayRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:75', 'min:3', Rule::unique('barangays', 'name')->ignore($this->route('barangay'))],
+            'name' => ['required', 'string', 'max:75', 'min:3', Rule::unique('barangays', 'name')->ignore($this->route('barangays'))],
         ];
     }
 }
