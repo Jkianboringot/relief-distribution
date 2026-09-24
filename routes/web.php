@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\barangayController;
+use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\BenificiaryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
