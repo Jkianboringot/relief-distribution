@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PackReceipt;
+use App\Models\ReliefPack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,16 +25,16 @@ class PackReceiptController extends Controller
 
     public function create(): Response
     {
-        
-        return Inertia::render('PackReceipts/Create');
+
+        return Inertia::render('PackReceipts/Create', [
+            'reliefPacks' => ReliefPack::select('id', 'name')
+                ->get(),
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         PackReceipt::create($validated);
 

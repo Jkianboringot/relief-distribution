@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Barangay;
-use App\Models\Beneficiary;
+use App\Models\Benificiary;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -16,7 +16,7 @@ class BeneficiarySeeder extends Seeder
 
         Barangay::all()->each(function (Barangay $barangay) use ($registrar) {
             for ($i = 0; $i < 15; $i++) {
-                Beneficiary::create([
+                Benificiary::create([
                     'barangay_id' => $barangay->id,
                     'first_name' => fake()->firstName(),
                     'middle_name' => fake()->boolean(70) ? fake()->lastName() : null,
