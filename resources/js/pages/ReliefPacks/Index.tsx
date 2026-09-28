@@ -19,7 +19,6 @@ interface ReliefPack {
     name: string;
     description: string | null;
     current_stock: number;
-    receipts_count: number;
 }
 
 interface PageProps {
@@ -28,6 +27,13 @@ interface PageProps {
         message?: string;
         error?: string;
     };
+}
+
+const DESCRIPTION_LIMIT = 60;
+
+function truncate(text: string, limit: number) {
+    if (text.length <= limit) return text;
+    return `${text.slice(0, limit).trimEnd()}…`;
 }
 
 function StockBadge({ stock }: { stock: number }) {
@@ -113,14 +119,13 @@ export default function Index() {
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Box Name</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Description</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Current Stock</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Receipts</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredPacks.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="py-10 text-center text-sm text-subtle">
+                                    <TableCell colSpan={4} className="py-10 text-center text-sm text-subtle">
                                         No box types found.
                                     </TableCell>
                                 </TableRow>
@@ -131,11 +136,12 @@ export default function Index() {
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">{pack.name}</TableCell>
-                                    <TableCell className="text-ink">{pack.description ?? '—'}</TableCell>
+                                    <TableCell className="max-w-xs text-ink" title={pack.description ?? undefined}>
+                                        {pack.description ? truncate(pack.description, DESCRIPTION_LIMIT) : '—'}
+                                    </TableCell>
                                     <TableCell>
                                         <StockBadge stock={pack.current_stock} />
                                     </TableCell>
-                                    <TableCell className="text-ink">{pack.receipts_count}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <Link

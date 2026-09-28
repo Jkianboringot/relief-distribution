@@ -200,7 +200,6 @@ export default function Index() {
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Barangay</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Gender</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Household</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">QR Code</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Status</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
@@ -224,7 +223,6 @@ export default function Index() {
                                     <TableCell className="text-ink">{Benificiary.barangay.name}</TableCell>
                                     <TableCell className="capitalize text-ink">{Benificiary.gender}</TableCell>
                                     <TableCell className="text-ink">{Benificiary.household_members}</TableCell>
-                                    <TableCell className="font-mono text-xs text-subtle">{Benificiary.qr_code}</TableCell>
                                     <TableCell>
                                         <StatusBadge status={Benificiary.status} />
                                     </TableCell>

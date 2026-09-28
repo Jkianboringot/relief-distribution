@@ -19,7 +19,7 @@ class PackReceiptRequest extends FormRequest
 
             'reliefList' => ['required', 'array', 'max:999', 'min:1'],
             'reliefList.*.relief_pack_id' => ['required', 'exists:relief_packs,id'],
-            'reliefList.*.quantity' => ['required', 'max:999', 'min:1', 'numeric'],
+            'reliefList.*.quantity' => ['required', 'max:99999', 'min:1', 'numeric'],
         ];
     }
 }

@@ -14,9 +14,11 @@ class ReliefPackController extends Controller
 {
     public function index(): Response
     {
-        $reliefPacks = ReliefPack::orderBy('name')
-            ->get();
-
+        $reliefPacks = ReliefPack::withSum('reliefStock as current_stock', 'quantity')
+            ->orderBy('name')
+            ->get()
+            ->each(fn($pack) => $pack->current_stock = (int) $pack->current_stock);
+// dd($reliefPacks);
         return Inertia::render('ReliefPacks/Index', [
             'reliefPacks' => $reliefPacks,
         ]);

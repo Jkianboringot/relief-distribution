@@ -20,17 +20,36 @@ class PackReceiptController extends Controller
         // throw new \Exception('Not implemented');
     }
 
-    public function index(): Response
-    {
-        $packReceipts = PackReceipt::withCount('reliefStock')
-            ->orderBy('source_name')
-            ->get();
+public function index(Request $request): Response
+{
+    $search = $request->string('search')->trim()->toString();
 
-        return Inertia::render('PackReceipts/Index', [
-            'packReceipts' => $packReceipts,
+    $packReceipts = PackReceipt::with('reliefStock.reliefPack:id,name')
+        ->withSum('reliefStock as total_quantity', 'quantity')
+        ->when($search !== '', function ($query) use ($search) {
+            $query->where('source_name', 'like', "{$search}%");
+        })
+        ->orderBy('source_name')
+        ->orderBy('id')
+        ->paginate(15)
+        ->withQueryString()
+        ->through(fn ($receipt) => [
+            'id' => $receipt->id,
+            'source_name' => $receipt->source_name,
+            'date_received' => $receipt->date_received,
+            'total_quantity' => (int) $receipt->total_quantity,
+            'items' => $receipt->reliefStock->map(fn ($stock) => [
+                'id' => $stock->id,
+                'name' => $stock->reliefPack?->name ?? 'Unknown pack',
+                'quantity' => $stock->quantity,
+            ])->values(),
         ]);
-    }
 
+    return Inertia::render('PackReceipts/Index', [
+        'packReceipts' => $packReceipts,
+        'filters' => $request->only(['search']),
+    ]);
+}
     public function create(): Response
     {
 
