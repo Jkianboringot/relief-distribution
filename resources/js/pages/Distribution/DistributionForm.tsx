@@ -26,6 +26,7 @@ export type Barangay = {
 export type ReliefLine = {
     relief_pack_id: string;
     quantity: string;
+    entitlement_per_beneficiary: string;
 };
 
 export type DistributionFormData = {
@@ -58,8 +59,6 @@ export default function DistributionForm({
 
     const err = errors as Record<string, string | undefined>;
 
-    // When editing, this schedule's own saved quantities count as free stock again.
-    // `initial` is only the saved lines on the edit page, and empty on create.
     const originalQty = new Map<string, number>();
     initial.reliefList.forEach((l) => {
         if (l.relief_pack_id) {
@@ -85,7 +84,10 @@ export default function DistributionForm({
         );
 
     const addLine = () =>
-        setData('reliefList', [...data.reliefList, { relief_pack_id: '', quantity: '' }]);
+        setData('reliefList', [
+            ...data.reliefList,
+            { relief_pack_id: '', quantity: '', entitlement_per_beneficiary: '1' },
+        ]);
 
     const removeLine = (index: number) =>
         setData(
@@ -206,7 +208,7 @@ export default function DistributionForm({
 
                     return (
                         <div key={index} className="space-y-1 rounded-lg border border-[#e5e7eb] p-3">
-                            <div className="grid grid-cols-[1fr_9rem_auto] items-start gap-3">
+                            <div className="grid grid-cols-[1fr_7rem_7rem_auto] items-start gap-3">
                                 <div>
                                     <Select
                                         value={line.relief_pack_id || undefined}
@@ -236,15 +238,32 @@ export default function DistributionForm({
                                     </Select>
                                 </div>
 
-                                <Input
-                                    type="number"
-                                    min={1}
-                                    max={available}
-                                    placeholder="Qty"
-                                    value={line.quantity}
-                                    onChange={(e) => setLine(index, { quantity: e.target.value })}
-                                    className="border-[#e0d0c0]"
-                                />
+                                <div>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        max={available}
+                                        placeholder="Qty brought"
+                                        value={line.quantity}
+                                        onChange={(e) => setLine(index, { quantity: e.target.value })}
+                                        className="border-[#e0d0c0]"
+                                    />
+                                    <p className="mt-0.5 text-[11px] text-subtle">Total qty</p>
+                                </div>
+
+                                <div>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        placeholder="Per family"
+                                        value={line.entitlement_per_beneficiary}
+                                        onChange={(e) =>
+                                            setLine(index, { entitlement_per_beneficiary: e.target.value })
+                                        }
+                                        className="border-[#e0d0c0]"
+                                    />
+                                    <p className="mt-0.5 text-[11px] text-subtle">Per family head</p>
+                                </div>
 
                                 <Button
                                     type="button"
@@ -269,6 +288,11 @@ export default function DistributionForm({
                             {err[`reliefList.${index}.quantity`] && (
                                 <p className="text-sm text-danger">
                                     {err[`reliefList.${index}.quantity`]}
+                                </p>
+                            )}
+                            {err[`reliefList.${index}.entitlement_per_beneficiary`] && (
+                                <p className="text-sm text-danger">
+                                    {err[`reliefList.${index}.entitlement_per_beneficiary`]}
                                 </p>
                             )}
                         </div>

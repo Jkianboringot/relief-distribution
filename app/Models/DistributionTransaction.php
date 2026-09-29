@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DistributionTransaction extends Model
 {
@@ -36,5 +37,11 @@ class DistributionTransaction extends Model
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(DistributionTransactionItem::class);
     }
 }

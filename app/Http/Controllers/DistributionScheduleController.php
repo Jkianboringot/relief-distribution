@@ -155,10 +155,11 @@ public function show(DistributionSchedule $schedule): Response
             'date' => $schedule->date?->format('Y-m-d'),
             'location' => $schedule->location,
             'barangay_id' => $schedule->barangay_id,
-            'reliefList' => $schedule->reliefStock->map(fn($stock) => [
-                'relief_pack_id' => $stock->relief_pack_id,
-                'quantity' => (int) $stock->quantity,
-            ])->values(),
+           'reliefList' => $schedule->reliefStock->map(fn($stock) => [
+    'relief_pack_id' => $stock->relief_pack_id,
+    'quantity' => (int) $stock->quantity,
+    'entitlement_per_beneficiary' => (int) $stock->entitlement_per_beneficiary,
+])->values(),
         ],
         'reliefPacks' => ReliefPack::with(['reliefStock', 'distributionReliefStock'])
             ->select('id', 'name')

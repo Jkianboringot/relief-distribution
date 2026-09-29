@@ -10,7 +10,7 @@ type Schedule = {
     date: string;
     location: string | null;
     barangay_id: number | null;
-    reliefList: { relief_pack_id: number; quantity: number }[];
+    reliefList: { relief_pack_id: number; quantity: number; entitlement_per_beneficiary: number }[];
 };
 
 type Props = {
@@ -47,6 +47,7 @@ export default function Edit({ schedule, reliefPacks, barangays }: Props) {
                         reliefList: schedule.reliefList.map((l) => ({
                             relief_pack_id: String(l.relief_pack_id),
                             quantity: String(l.quantity),
+                            entitlement_per_beneficiary: String(l.entitlement_per_beneficiary),
                         })),
                     }}
                 />

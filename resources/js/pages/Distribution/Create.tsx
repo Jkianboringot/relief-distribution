@@ -36,7 +36,7 @@ export default function Create({ reliefPacks, barangays }: Props) {
                         date: '',
                         location: '',
                         barangay_id: '',
-                        reliefList: [{ relief_pack_id: '', quantity: '' }],
+                         reliefList: [{ relief_pack_id: '', quantity: '', entitlement_per_beneficiary: '1' }],
                     }}
                 />
             </div>

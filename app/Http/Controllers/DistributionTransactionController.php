@@ -15,28 +15,32 @@ class DistributionTransactionController extends Controller
     {
     }
 
-    public function store(Request $request, DistributionSchedule $schedule)
-    {
-        $validated = $request->validate([
-            'qr_code' => 'required|string',
-        ]);
+   public function store(Request $request, DistributionSchedule $schedule)
+{
+    $validated = $request->validate([
+        'qr_code' => 'required|string',
+    ]);
 
-        try {
-            $transaction = $this->transactions->claim(
-                $schedule,
-                $validated['qr_code'],
-                $request->user()->id
-            );
-        } catch (InsufficientStockException | \DomainException $e) {
-            return back()->with('error', $e->getMessage());
-        } catch (\Throwable $th) {
-            Log::error($th);
-            return back()->with('error', 'Failed to record the claim.');
-        }
-
-        return back()->with('message', "Box released to {$transaction->beneficiary->family_head_name}.");
+    try {
+        $transaction = $this->transactions->claim(
+            $schedule,
+            $validated['qr_code'],
+            $request->user()->id
+        );
+    } catch (InsufficientStockException | \DomainException $e) {
+        return back()->with('error', $e->getMessage());
+    } catch (\Throwable $th) {
+        Log::error($th);
+        return back()->with('error', 'Failed to record the claim.');
     }
 
+    $packNames = $transaction->items->pluck('reliefPack.name')->filter()->implode(', ');
+
+    return back()->with(
+        'message',
+        "Released {$transaction->quantity_boxes} box(es) to {$transaction->beneficiary->full_name}: {$packNames}."
+    );
+}
     public function destroy(DistributionTransaction $transaction)
     {
         try {

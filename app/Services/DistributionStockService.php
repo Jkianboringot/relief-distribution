@@ -19,14 +19,14 @@ use Illuminate\Support\Facades\DB;
  */
 class DistributionStockService
 {
-    /**
-     * $data = [
-     *   'schedule'   => ['title' => '...', 'date' => 'Y-m-d', 'location' => '...', 'barangay' => '...'],
-     *   'reliefList' => [['relief_pack_id' => 1, 'quantity' => 50], ...],
-     * ]
-     *
-     * @throws InsufficientStockException
-     */
+/**
+ * $data = [
+ *   'schedule'   => ['title' => '...', 'date' => 'Y-m-d', 'location' => '...', 'barangay_id' => 1],
+ *   'reliefList' => [['relief_pack_id' => 1, 'quantity' => 50, 'entitlement_per_beneficiary' => 2], ...],
+ * ]
+ *
+ * @throws InsufficientStockException
+ */
     public function distributionStore(array $data): DistributionSchedule
     {
         return DB::transaction(function () use ($data) {
@@ -163,13 +163,14 @@ class DistributionStockService
         }
     }
 
-    private function lines(array $reliefList): array
-    {
-        return collect($reliefList)
-            ->map(fn (array $item) => [
-                'relief_pack_id' => $item['relief_pack_id'],
-                'quantity' => $item['quantity'],
-            ])
-            ->all();
-    }
+  private function lines(array $reliefList): array
+{
+    return collect($reliefList)
+        ->map(fn (array $item) => [
+            'relief_pack_id' => $item['relief_pack_id'],
+            'quantity' => $item['quantity'],
+            'entitlement_per_beneficiary' => $item['entitlement_per_beneficiary'] ?? 1,
+        ])
+        ->all();
+}
 }

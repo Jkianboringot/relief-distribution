@@ -9,77 +9,107 @@ use App\Models\DistributionTransaction;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Claims against ONE distribution schedule's own stock.
- * Remaining = SUM(distribution_relief_stocks) - COUNT(claimed transactions).
- *
- * Methods do not catch exceptions. The transaction rolls back on throw
- * and the controller decides what to show.
- */
 class DistributionTransactionService
 {
     /**
-     * @throws \DomainException            not eligible / wrong barangay / already claimed / schedule not ongoing
-     * @throws InsufficientStockException  schedule stock is already zero
+     * @throws \DomainException            not eligible / wrong barangay / already claimed / schedule not ongoing / no packs configured
+     * @throws InsufficientStockException  any pack on the schedule is out of stock
      */
     public function claim(DistributionSchedule $schedule, string $qrCode, int $verifiedBy): DistributionTransaction
-{
-    try {
-        return DB::transaction(function () use ($schedule, $qrCode, $verifiedBy) {
-            $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
+    {
+        try {
+            return DB::transaction(function () use ($schedule, $qrCode, $verifiedBy) {
+                // Lock the schedule so two simultaneous scans can't both take the last boxes.
+                $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
 
-            if ($schedule->status !== 'ongoing') {
-                throw new \DomainException('This distribution is not open for claiming.');
+                if ($schedule->status !== 'ongoing') {
+                    throw new \DomainException('This distribution is not open for claiming.');
+                }
+
+                $beneficiary = Benificiary::where('qr_code', $qrCode)->first();
+
+                if (! $beneficiary) {
+                    throw new \DomainException('QR code not recognized.');
+                }
+
+                if ((int) $beneficiary->barangay_id !== (int) $schedule->barangay_id) {
+                    throw new \DomainException('This family head is not registered in this barangay.');
+                }
+
+                $alreadyClaimed = $schedule->transactions()
+                    ->where('beneficiary_id', $beneficiary->id)
+                    ->exists();
+
+                if ($alreadyClaimed) {
+                    throw new \DomainException("{$beneficiary->full_name} has already claimed.");
+                }
+
+                // Every pack type on this schedule, and how many boxes were planned for it in total.
+                $planned = $schedule->reliefStock()
+                    ->get(['relief_pack_id', 'quantity'])
+                    ->groupBy('relief_pack_id')
+                    ->map(fn ($rows) => (int) $rows->sum('quantity'));
+
+                if ($planned->isEmpty()) {
+                    throw new \DomainException('No relief packs configured for this distribution.');
+                }
+
+                // How many boxes of each pack type have already been given out (claimed only).
+                $given = $schedule->transactionItems()
+                    ->whereIn('relief_pack_id', $planned->keys())
+                    ->whereHas('transaction', fn ($q) => $q->where('status', 'claimed'))
+                    ->selectRaw('relief_pack_id, SUM(quantity) as total')
+                    ->groupBy('relief_pack_id')
+                    ->pluck('total', 'relief_pack_id');
+
+                // A claim is 1 box of EVERY pack type on the schedule (a bundle).
+                // If any single pack is out of stock, the whole bundle can't be released.
+                foreach ($planned as $packId => $totalPlanned) {
+                    $remaining = $totalPlanned - (int) ($given[$packId] ?? 0);
+
+                    if ($remaining < 1) {
+                        $packName = $schedule->reliefStock()
+                            ->with('reliefPack:id,name')
+                            ->where('relief_pack_id', $packId)
+                            ->first()?->reliefPack?->name ?? "Pack #{$packId}";
+
+                        throw new InsufficientStockException("Stock is already zero for {$packName}.");
+                    }
+                }
+
+                $transaction = $schedule->transactions()->create([
+                    'beneficiary_id'         => $beneficiary->id,
+                    'quantity_boxes'         => $planned->count(),
+                    'verified_by'            => $verifiedBy,
+                    'verification_timestamp' => now(),
+                    'status'                 => 'claimed',
+                ]);
+
+                foreach ($planned->keys() as $packId) {
+                    $transaction->items()->create([
+                        'relief_pack_id' => $packId,
+                        'quantity' => 1,
+                    ]);
+                }
+
+                return $transaction->load(
+                    'beneficiary.barangay:id,name',
+                    'beneficiary:id,first_name,middle_name,last_name,barangay_id,household_members',
+                    'items.reliefPack:id,name',
+                );
+            });
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                throw new \DomainException('This family head has already claimed.');
             }
-
-            $beneficiary = Benificiary::where('qr_code', $qrCode)->first();
-
-            if (! $beneficiary) {
-                throw new \DomainException('QR code not recognized.');
-            }
-
-            if ((int) $beneficiary->barangay_id !== (int) $schedule->barangay_id) {
-                throw new \DomainException('This family head is not registered in this barangay.');
-            }
-
-            $alreadyClaimed = $schedule->transactions()
-                ->where('beneficiary_id', $beneficiary->id)
-                ->exists();
-
-            if ($alreadyClaimed) {
-                throw new \DomainException("{$beneficiary->full_name} has already claimed.");
-            }
-
-            $stock = (int) $schedule->reliefStock()->sum('quantity');
-            $used  = $schedule->transactions()->where('status', 'claimed')->count();
-
-            if ($stock - $used < 1) {
-                throw new InsufficientStockException('Stock is already zero for this distribution.');
-            }
-
-            return $schedule->transactions()->create([
-                'beneficiary_id'         => $beneficiary->id,
-                'quantity_boxes'         => 1,
-                'verified_by'            => $verifiedBy,
-                'verification_timestamp' => now(),
-                'status'                 => 'claimed',
-            ])->load('beneficiary.barangay:id,name', 'beneficiary:id,first_name,middle_name,last_name,barangay_id,household_members');
-        });
-    } catch (QueryException $e) {
-        if ($e->getCode() === '23000') {
-            throw new \DomainException('This family head has already claimed.');
+            throw $e;
         }
-        throw $e;
     }
-}
 
-    /**
-     * Reverse a wrongly recorded claim. Stock frees up automatically
-     * because remaining is computed from the transaction count.
-     */
     public function reverse(DistributionTransaction $transaction): void
     {
         DB::transaction(function () use ($transaction) {
+            // Items cascade-delete via the FK, freeing all pack stock automatically.
             $transaction->delete();
         });
     }
