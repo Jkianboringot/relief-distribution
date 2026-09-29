@@ -19,14 +19,14 @@ use Illuminate\Support\Facades\DB;
  */
 class DistributionStockService
 {
-/**
- * $data = [
- *   'schedule'   => ['title' => '...', 'date' => 'Y-m-d', 'location' => '...', 'barangay_id' => 1],
- *   'reliefList' => [['relief_pack_id' => 1, 'quantity' => 50, 'entitlement_per_beneficiary' => 2], ...],
- * ]
- *
- * @throws InsufficientStockException
- */
+    /**
+     * $data = [
+     *   'schedule'   => ['title' => '...', 'date' => 'Y-m-d', 'location' => '...', 'barangay_id' => 1],
+     *   'reliefList' => [['relief_pack_id' => 1, 'quantity' => 50, 'entitlement_per_beneficiary' => 2], ...],
+     * ]
+     *
+     * @throws InsufficientStockException
+     */
     public function distributionStore(array $data): DistributionSchedule
     {
         return DB::transaction(function () use ($data) {
@@ -68,11 +68,19 @@ class DistributionStockService
     /**
      * Deleting an OUT record only returns stock, so no stock check is needed.
      *
-     * @throws \DomainException if beneficiaries already have transactions on this schedule
+     * @throws \DomainException if the schedule is completed,
+     *                          or if beneficiaries already have transactions on it
      */
     public function distributionDelete(DistributionSchedule $schedule): void
     {
         DB::transaction(function () use ($schedule) {
+            // Lock so a status change can't slip in while we are deleting.
+            $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
+
+            if ($schedule->status === 'completed') {
+                throw new \DomainException('Cannot delete a completed distribution.');
+            }
+
             if ($schedule->transactions()->exists()) {
                 throw new \DomainException('Cannot delete a schedule that already has beneficiary transactions.');
             }
@@ -82,31 +90,85 @@ class DistributionStockService
         });
     }
 
+    /**
+     * Allowed flow: pending -> ongoing -> completed.
+     *
+     * @throws \DomainException
+     */
     public function distributionSetStatus(DistributionSchedule $schedule, string $status): DistributionSchedule
-{
-    return DB::transaction(function () use ($schedule, $status) {
-        // Lock so a claim in progress can't overlap with a status change.
-        $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
+    {
+        return DB::transaction(function () use ($schedule, $status) {
+            // Lock so a claim in progress can't overlap with a status change.
+            $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
 
-        $allowed = [
-            'pending' => ['ongoing'],
-            'ongoing' => ['completed'],
-        ];
+            $allowed = [
+                'pending' => ['ongoing'],
+                'ongoing' => ['completed'],
+            ];
 
-        if (! in_array($status, $allowed[$schedule->status] ?? [], true)) {
-            throw new \DomainException("Cannot change a {$schedule->status} distribution to {$status}.");
+            if (! in_array($status, $allowed[$schedule->status] ?? [], true)) {
+                throw new \DomainException("Cannot change a {$schedule->status} distribution to {$status}.");
+            }
+
+            if ($status === 'ongoing' && $schedule->reliefStock()->sum('quantity') < 1) {
+                throw new \DomainException('Add relief stock to this distribution before starting it.');
+            }
+
+            if ($status === 'completed') {
+                $this->guardFullyGivenOut($schedule);
+            }
+
+            $schedule->status = $status;
+            $schedule->save();
+
+            return $schedule;
+        });
+    }
+
+    /**
+     * A distribution can only be completed when every relief pack assigned to it
+     * has been fully given out (nothing left over).
+     *
+     * Given out per pack = (number of beneficiary transactions) x entitlement_per_beneficiary.
+     * Must be called inside a transaction.
+     *
+     * @throws \DomainException listing the packs that still have items left
+     */
+    private function guardFullyGivenOut(DistributionSchedule $schedule): void
+    {
+        $lines = $schedule->reliefStock()
+            ->get(['relief_pack_id', 'quantity', 'entitlement_per_beneficiary']);
+
+        if ($lines->isEmpty()) {
+            throw new \DomainException('This distribution has no relief stock, so it cannot be completed.');
         }
 
-        if ($status === 'ongoing' && $schedule->reliefStock()->sum('quantity') < 1) {
-            throw new \DomainException('Add relief stock to this distribution before starting it.');
+        // ASSUMPTION: every row in transactions() is one beneficiary who already received
+        // their entitlement. If transactions have a status column (e.g. pending/claimed),
+        // filter it here, for example: ->where('status', 'claimed')
+        $beneficiariesServed = $schedule->transactions()->count();
+
+        $names = ReliefPack::whereIn('id', $lines->pluck('relief_pack_id'))->pluck('name', 'id');
+
+        $leftovers = [];
+
+        foreach ($lines as $line) {
+            $givenOut = $beneficiariesServed * (int) $line->entitlement_per_beneficiary;
+            $remaining = (int) $line->quantity - $givenOut;
+
+            if ($remaining > 0) {
+                $name = $names[$line->relief_pack_id] ?? "Pack #{$line->relief_pack_id}";
+                $leftovers[] = "{$name} ({$remaining} left)";
+            }
         }
 
-        $schedule->status = $status;
-        $schedule->save();
-
-        return $schedule;
-    });
-}
+        if ($leftovers !== []) {
+            throw new \DomainException(
+                'Cannot complete this distribution until all relief packs are given out. Remaining: '
+                . implode(', ', $leftovers) . '.'
+            );
+        }
+    }
 
     /**
      * Checks every requested pack has enough stock.
@@ -163,14 +225,14 @@ class DistributionStockService
         }
     }
 
-  private function lines(array $reliefList): array
-{
-    return collect($reliefList)
-        ->map(fn (array $item) => [
-            'relief_pack_id' => $item['relief_pack_id'],
-            'quantity' => $item['quantity'],
-            'entitlement_per_beneficiary' => $item['entitlement_per_beneficiary'] ?? 1,
-        ])
-        ->all();
-}
+    private function lines(array $reliefList): array
+    {
+        return collect($reliefList)
+            ->map(fn (array $item) => [
+                'relief_pack_id' => $item['relief_pack_id'],
+                'quantity' => $item['quantity'],
+                'entitlement_per_beneficiary' => $item['entitlement_per_beneficiary'] ?? 1,
+            ])
+            ->all();
+    }
 }

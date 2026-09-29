@@ -22,8 +22,7 @@ Route::get('/scan/{qr_code}', [BenificiaryController::class, 'scan'])
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::prefix('barangays')->name('barangays.')->group(
         function () {
