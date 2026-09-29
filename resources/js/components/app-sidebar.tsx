@@ -51,9 +51,14 @@ const mainNavItems: NavItem[] = [
         href: '/users',
         icon: User,
     },
-     {
+    {
         title: 'Pack Receipt',
         href: '/pack-receipts',
+        icon: Package,
+    },
+    {
+        title: 'Report',
+        href: '/reports',
         icon: Package,
     },
 

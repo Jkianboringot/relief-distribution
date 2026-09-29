@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\ClaimStatus;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Benificiary;
 use App\Models\DistributionSchedule;
@@ -57,7 +58,7 @@ class DistributionTransactionService
                 // How many boxes of each pack type have already been given out (claimed only).
                 $given = $schedule->transactionItems()
                     ->whereIn('relief_pack_id', $planned->keys())
-                    ->whereHas('transaction', fn ($q) => $q->where('status', 'claimed'))
+                    ->whereHas('transaction', fn ($q) => $q->where('status',ClaimStatus::Claim->value))
                     ->selectRaw('relief_pack_id, SUM(quantity) as total')
                     ->groupBy('relief_pack_id')
                     ->pluck('total', 'relief_pack_id');
@@ -82,7 +83,7 @@ class DistributionTransactionService
                     'quantity_boxes'         => $planned->count(),
                     'verified_by'            => $verifiedBy,
                     'verification_timestamp' => now(),
-                    'status'                 => 'claimed',
+                    'status'                 => ClaimStatus::Claim->value,
                 ]);
 
                 foreach ($planned->keys() as $packId) {
