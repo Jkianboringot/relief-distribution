@@ -15,9 +15,8 @@ return new class extends Migration
             $table->string('title');
             $table->date('date');
             $table->string('location')->nullable();
-            $table->string('barangay');
-            $table->foreignId('relief_pack_id')->constrained('relief_packs');
-            $table->unsignedInteger('planned_quantity'); // boxes allotted for this schedule
+            $table->foreignId('barangay_id')->constrained('barangays');
+
             $table->enum('status', ['pending', 'ongoing', 'completed'])->default('pending');
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();

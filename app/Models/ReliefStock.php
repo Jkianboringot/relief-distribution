@@ -16,7 +16,7 @@ class ReliefStock extends Model
 
     public function packReceipt()
     {
-        return $this->hasMany(PackReceipt::class,'pack_receipt_id');
+        return $this->belongsTo(PackReceipt::class,'pack_receipt_id');
     }
 
 }

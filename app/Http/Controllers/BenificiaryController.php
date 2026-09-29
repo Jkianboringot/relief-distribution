@@ -73,26 +73,27 @@ class BenificiaryController extends Controller
         return redirect()->route('beneficiaries.index')->with('message', 'Benificiary Updated Successfully');
     }
 
-    public function index(Request $request)
-    {
-        $beneficiaries = Benificiary::query()
-            ->with('barangay:id,name')
-            ->when($request->string('search')->trim(), function ($query, $search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('first_name', 'like', "{$search}%")
-                        ->orWhere('last_name', 'like', "{$search}%");
-                });
-            })
-            ->when($request->integer('barangay_id'), fn($query, $barangayId) => $query->where('barangay_id', $barangayId))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+  public function index(Request $request)
+{
+    $beneficiaries = Benificiary::query()
+        ->with('barangay:id,name')
+        ->when($request->string('search')->trim(), function ($query, $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('first_name', 'like', "{$search}%")
+                    ->orWhere('last_name', 'like', "{$search}%");
+            });
+        })
+        ->when($request->integer('barangay_id'), fn($query, $barangayId) => $query->where('barangay_id', $barangayId))
+        ->latest()
+        ->paginate(15)
+        ->withQueryString();
 
-        return Inertia::render('Beneficiaries/Index', [
-            'beneficiaries' => $beneficiaries,
-            'filters' => $request->only(['search', 'barangay_id']),
-        ]);
-    }
+    return Inertia::render('Beneficiaries/Index', [
+        'beneficiaries' => $beneficiaries,
+        'barangays' => Barangay::query()->orderBy('name')->get(['id', 'name']),
+        'filters' => $request->only(['search', 'barangay_id']),
+    ]);
+}
 
     protected function genderOptions(): array
     {

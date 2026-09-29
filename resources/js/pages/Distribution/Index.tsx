@@ -1,4 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { CalendarDays, Pencil, Trash2 } from 'lucide-react';
+import FlashAlerts from '@/components/flash-alerts';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -8,19 +10,24 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { CalendarDays } from 'lucide-react';
-import { show } from '@/routes/distribution';
-import FlashAlerts from '@/components/flash-alerts';
+import { destroy, edit, show } from '@/routes/distribution';
+
+interface ScheduleItem {
+    id: number;
+    name: string;
+    quantity: number;
+}
 
 interface Schedule {
     id: number;
     title: string;
-    date: string;
+    date: string | null;
+    location: string | null;
     barangay: string;
-    planned_quantity: number;
-    claimed_count: number;
     status: 'pending' | 'ongoing' | 'completed';
-    relief_pack: { id: number; name: string; current_stock: number };
+    claimed_count: number;
+    total_quantity: number;
+    items: ScheduleItem[];
 }
 
 interface PageProps {
@@ -31,6 +38,16 @@ interface PageProps {
     };
 }
 
+function formatDate(value: string | null) {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return value;
+
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    return `${month} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
 function StatusBadge({ status }: { status: string }) {
     const styles: Record<string, string> = {
         pending: 'border-[#d1d5db] bg-[#e5e7eb] text-[#374151]',
@@ -39,14 +56,25 @@ function StatusBadge({ status }: { status: string }) {
     };
 
     return (
-        <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-medium capitalize ${styles[status]}`}>
+        <span
+            className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-medium capitalize ${styles[status] ?? styles.pending}`}
+        >
             {status}
         </span>
     );
 }
 
 export default function Index() {
-    const { flash, schedules } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
+    const { flash, schedules = [] } = usePage<PageProps & Record<string, unknown>>()
+        .props as unknown as PageProps;
+
+    const handleDelete = (schedule: Schedule) => {
+        if (!window.confirm(`Delete "${schedule.title}"? This cannot be undone.`)) {
+            return;
+        }
+
+        router.delete(destroy(schedule.id).url, { preserveScroll: true });
+    };
 
     return (
         <>
@@ -59,7 +87,7 @@ export default function Index() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
                         Distribution Schedules
                     </h1>
-                    <Link href={'/distribution/create'}>
+                    <Link href="/distribution/create">
                         <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
                             New Schedule
                         </Button>
@@ -92,15 +120,29 @@ export default function Index() {
                                     key={schedule.id}
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                 >
-                                    <TableCell className="flex items-center gap-2 font-medium text-[#7a3b12]">
-                                        <CalendarDays className="h-4 w-4 text-brand-orange" />
-                                        {schedule.title}
+                                    <TableCell className="font-medium text-[#7a3b12]">
+                                        <div className="flex items-center gap-2">
+                                            <CalendarDays className="h-4 w-4 text-brand-orange" />
+                                            {schedule.title}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="text-ink">{schedule.date}</TableCell>
+                                    <TableCell className="text-ink">{formatDate(schedule.date)}</TableCell>
                                     <TableCell className="text-ink">{schedule.barangay}</TableCell>
-                                    <TableCell className="text-ink">{schedule.relief_pack.name}</TableCell>
                                     <TableCell className="text-ink">
-                                        {schedule.claimed_count} / {schedule.planned_quantity}
+                                        {(schedule.items ?? []).length === 0 ? (
+                                            '—'
+                                        ) : (
+                                            <ul className="space-y-0.5 text-sm">
+                                                {schedule.items.map((item) => (
+                                                    <li key={item.id}>
+                                                        {item.name} × {item.quantity}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-ink">
+                                        {schedule.claimed_count} / {schedule.total_quantity}
                                     </TableCell>
                                     <TableCell>
                                         <StatusBadge status={schedule.status} />
@@ -113,6 +155,21 @@ export default function Index() {
                                             >
                                                 View / Claim
                                             </Link>
+                                            <Link
+                                                href={edit(schedule.id).url}
+                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
+                                            >
+                                                <Pencil className="h-3.5 w-3.5" />
+                                                Edit
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(schedule)}
+                                                className="flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                                Delete
+                                            </button>
                                         </div>
                                     </TableCell>
                                 </TableRow>

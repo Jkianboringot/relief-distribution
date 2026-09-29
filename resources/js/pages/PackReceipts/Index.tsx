@@ -46,13 +46,13 @@ const MAX_VISIBLE = 3;
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// "2026-09-16T00:00:00.000000Z" -> "Sep 16 2026"
+// "2026-09-16T00:00:00.000000Z" -> "Sep 16, 2026"
 // Reads the date part straight from the string so timezones can't shift the day.
 const formatDate = (value: string | null): string => {
     if (!value) return '—';
     const [year, month, day] = value.slice(0, 10).split('-').map(Number);
     if (!year || !month || !day) return value;
-    return `${MONTHS[month - 1]} ${day} ${year}`;
+    return `${MONTHS[month - 1]} ${day}, ${year}`;
 };
 
 // Laravel's paginator labels are always one of these three shapes —

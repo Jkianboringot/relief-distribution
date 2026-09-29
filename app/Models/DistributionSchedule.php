@@ -15,7 +15,7 @@ class DistributionSchedule extends Model
         'title',
         'date',
         'location',
-        'barangay',
+        'barangay_id',
         'relief_pack_id',
         'planned_quantity',
         'status',
@@ -26,21 +26,22 @@ class DistributionSchedule extends Model
         'date' => 'date',
     ];
 
-
-    // TODO:remove this later after deployed shit is fix
-    public function receipts()
+      public function barangay(): BelongsTo
     {
-        return $this->hasMany(PackReceipt::class, 'relief_pack_id');
-    }
-    public function reliefPack(): BelongsTo
-    {
-        return $this->belongsTo(ReliefPack::class);
+        return $this->belongsTo(Barangay::class);
     }
 
+
+    public function reliefStock(): HasMany
+    {
+        return $this->hasMany(DistributionReliefStock::class, 'distribution_sched_id');
+    }
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+
 
     public function transactions(): HasMany
     {
@@ -52,8 +53,16 @@ class DistributionSchedule extends Model
         return $this->transactions()->where('status', 'claimed')->count();
     }
 
+       // NOTE: this is the total across ALL pack types on the schedule.
+    // Adjust if a claim should count against one specific pack.
+    public function plannedQuantity(): int
+    {
+        return (int) $this->reliefStock()->sum('quantity');
+    }
+
+
     public function remainingAllocation(): int
     {
-        return max(0, $this->planned_quantity - $this->claimedCount());
+        return max(0, $this->plannedQuantity() - $this->claimedCount());
     }
 }

@@ -26,8 +26,8 @@ class DatabaseSeeder extends Seeder
             ReliefPackSeeder::class,
             PackReceiptSeeder::class,
             BeneficiarySeeder::class,
-            DistributionScheduleSeeder::class,
-            DistributionTransactionSeeder::class,
+            // DistributionScheduleSeeder::class,
+            // DistributionTransactionSeeder::class,
         ]);
 
     }

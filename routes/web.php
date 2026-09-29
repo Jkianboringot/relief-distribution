@@ -106,7 +106,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     );
 
-     Route::prefix('relief-packs')->name('relief-packs.')->group(
+    Route::prefix('relief-packs')->name('relief-packs.')->group(
 
         function () {
             Route::get('/', [ReliefPackController::class, 'index'])->name('index');
@@ -122,18 +122,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     );
 
+    Route::prefix('distribution')->name('distribution.')->group(function () {
+        Route::get('/', [DistributionScheduleController::class, 'index'])->name('index');
+        Route::get('/create', [DistributionScheduleController::class, 'create'])->name('create');
+        Route::post('/', [DistributionScheduleController::class, 'store'])->name('store');
+        Route::get('/{schedule}', [DistributionScheduleController::class, 'show'])->name('show');
+        Route::get('/{schedule}/edit', [DistributionScheduleController::class, 'edit'])->name('edit');
+        Route::put('/{schedule}', [DistributionScheduleController::class, 'update'])->name('update');
+        Route::delete('/{schedule}', [DistributionScheduleController::class, 'destroy'])->name('destroy');
+        Route::post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])->name('claim');
+        Route::patch('{schedule}/status', [DistributionScheduleController::class, 'updateStatus'])
+            ->name('status');
+    });
 
-    Route::prefix('distribution')->name('distribution.')->group(
 
-        function () {
-            Route::get('/', [DistributionScheduleController::class, 'index'])->name('index');
-            Route::get('/create', [DistributionScheduleController::class, 'create'])->name('create');
-            Route::post('/', [DistributionScheduleController::class, 'store'])->name('store');
-            Route::get('/{schedule}', [DistributionScheduleController::class, 'show'])->name('show');
-            Route::post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])->name('claim');
-
-        }
-    );
     Route::prefix('distribution-transactions')->name('distribution-transactions.')->group(
         function () {
             Route::delete('/{transaction}', [DistributionTransactionController::class, 'destroy'])->name('destroy');

@@ -26,32 +26,28 @@ class ReliefPack extends Model
     {
         return $this->hasMany(ReliefStock::class);
     }
-    public function schedules(): HasMany
+
+
+       public function distributionReliefStock(): HasMany
     {
-        return $this->hasMany(DistributionSchedule::class);
+        return $this->hasMany(DistributionReliefStock::class);
     }
-
-    public function incrementStock(int $quantity): void
-    {
-        $this->increment('current_stock', $quantity);
-    }
-
-    public function decrementStock(int $quantity): void
-    {
-        if ($this->current_stock < $quantity) {
-            throw new \RuntimeException('Not enough boxes in stock.');
-        }
-
-        $this->decrement('current_stock', $quantity);
-    }
-
-
-      protected function currentStock(): Attribute
+ 
+    // current stock = total received - total distributed
+    protected function currentStock(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->relationLoaded('reliefStock')
-                ? $this->reliefStock->sum('quantity')
-                : $this->reliefStock()->sum('quantity'),
+            get: function () {
+                $in = $this->relationLoaded('reliefStock')
+                    ? $this->reliefStock->sum('quantity')
+                    : $this->reliefStock()->sum('quantity');
+ 
+                $out = $this->relationLoaded('distributionReliefStock')
+                    ? $this->distributionReliefStock->sum('quantity')
+                    : $this->distributionReliefStock()->sum('quantity');
+ 
+                return (int) $in - (int) $out;
+            },
         );
     }
     

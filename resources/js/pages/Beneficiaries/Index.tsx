@@ -5,6 +5,13 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Table,
     TableBody,
     TableCell,
@@ -40,6 +47,7 @@ interface PaginatedBeneficiaries {
 
 interface PageProps {
     beneficiaries: PaginatedBeneficiaries;
+    barangays: barangay[];
     filters: { search?: string; barangay_id?: string };
     flash: {
         message?: string;
@@ -74,28 +82,35 @@ function paginationLabel(label: string) {
 }
 
 export default function Index() {
-    const { flash, beneficiaries, filters } = usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
+    const { flash, beneficiaries, barangays, filters } =
+        usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
     const { processing, delete: destroyForm } = useForm();
     const [search, setSearch] = useState(filters?.search ?? '');
+    const [barangayId, setBarangayId] = useState(filters?.barangay_id ?? '');
     const [qrBusyId, setQrBusyId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (search === (filters?.search ?? '')) return;
+        if (search === (filters?.search ?? '') && barangayId === (filters?.barangay_id ?? '')) return;
 
         const timeout = setTimeout(() => {
             router.get(
                 beneficiariesIndex().url,
-                { search },
+                { search, barangay_id: barangayId || undefined },
                 { preserveState: true, replace: true },
             );
         }, 400);
 
         return () => clearTimeout(timeout);
-    }, [search, filters?.search]);
+    }, [search, barangayId, filters?.search, filters?.barangay_id]);
 
     function clearSearch() {
         setSearch('');
-        router.get(index().url, {}, { preserveState: true, replace: true });
+        router.get(index().url, { barangay_id: barangayId || undefined }, { preserveState: true, replace: true });
+    }
+
+    function clearBarangay() {
+        setBarangayId('');
+        router.get(index().url, { search }, { preserveState: true, replace: true });
     }
 
     // Builds a one-page PDF with the beneficiary's QR code, entirely in the
@@ -167,6 +182,34 @@ export default function Index() {
 
                 <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
                     <div className="flex items-center justify-end gap-3 border-b border-[#d1d5db] px-5 py-3">
+                        <div className="relative">
+                            <Select
+                                value={barangayId || undefined}
+                                onValueChange={(value) => setBarangayId(value)}
+                            >
+                                <SelectTrigger className="w-48 border-brand-orange/40 bg-white text-sm">
+                                    <SelectValue placeholder="All barangays" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {barangays.map((b) => (
+                                        <SelectItem key={b.id} value={String(b.id)}>
+                                            {b.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {barangayId && (
+                                <button
+                                    type="button"
+                                    onClick={clearBarangay}
+                                    aria-label="Clear barangay filter"
+                                    className="absolute -right-6 top-1/2 -translate-y-1/2 text-subtle hover:text-brand-orange"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+
                         <div className="relative">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-orange" />
                             <Input

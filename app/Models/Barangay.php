@@ -16,6 +16,10 @@ class Barangay extends Model
     {
         return $this->hasMany(Benificiary::class);
     }
+ public function distributionSchedule(): HasMany
+    {
+        return $this->hasMany(DistributionSchedule::class);
+    }
 
 
 }

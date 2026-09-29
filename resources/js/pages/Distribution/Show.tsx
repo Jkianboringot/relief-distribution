@@ -1,9 +1,11 @@
 import { useRef } from 'react';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { CircleAlert, QrCode, Undo2 } from 'lucide-react';
+import FlashAlerts from '@/components/flash-alerts';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
     Table,
     TableBody,
@@ -12,10 +14,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { CircleAlert, QrCode, Undo2 } from 'lucide-react';
-import { claim } from '@/routes/distribution';
+import { claim, status as updateStatus } from '@/routes/distribution';
 import { destroy } from '@/routes/distribution-transactions';
-import FlashAlerts from '@/components/flash-alerts';
 
 interface Beneficiary {
     id: number;
@@ -29,19 +29,25 @@ interface Transaction {
     quantity_boxes: number;
     verification_timestamp: string;
     status: 'claimed' | 'pending';
-    beneficiary: Beneficiary;
+    beneficiary: Beneficiary | null;
     verified_by: { id: number; name: string } | null;
+}
+
+interface ReliefStock {
+    id: number;
+    relief_pack_id: number;
+    quantity: number;
+    relief_pack: { id: number; name: string } | null;
 }
 
 interface Schedule {
     id: number;
     title: string;
-    date: string;
+    date: string | null;
     location: string | null;
     barangay: string;
-    planned_quantity: number;
-    status: string;
-    relief_pack: { id: number; name: string; current_stock: number };
+    status: 'pending' | 'ongoing' | 'completed';
+    relief_stock: ReliefStock[];
     transactions: Transaction[];
 }
 
@@ -54,18 +60,52 @@ interface PageProps {
     };
 }
 
+function formatDate(value: string | null) {
+    if (!value) return '—';
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return value;
+
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    return `${month} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
 export default function Show() {
     const { flash, schedule, remainingAllocation } = usePage<PageProps & Record<string, unknown>>()
         .props as unknown as PageProps;
 
-    const { data, setData, post, processing, errors, reset } = useForm({ qr_code: '' });
+    const reliefStock = schedule.relief_stock ?? [];
+    const transactions = schedule.transactions ?? [];
+
+    const plannedQuantity = reliefStock.reduce((sum, s) => sum + (Number(s.quantity) || 0), 0);
+    const claimedCount = transactions.filter((t) => t.status === 'claimed').length;
+    const remaining = remainingAllocation ?? 0;
+
+    const isOngoing = schedule.status === 'ongoing';
+    const outOfStock = remaining < 1;
+    const canClaim = isOngoing && !outOfStock;
+
+    const packSummary =
+        reliefStock.length === 0
+            ? '—'
+            : reliefStock
+                  .map((s) => `${s.relief_pack?.name ?? 'Unknown pack'} × ${s.quantity}`)
+                  .join(', ');
+
+    const { data, setData, post, processing, errors, reset, transform } = useForm({ qr_code: '' });
     const qrInputRef = useRef<HTMLInputElement>(null);
+
+    // Hardware scanners can append whitespace/newlines.
+    transform((d) => ({ ...d, qr_code: d.qr_code.trim() }));
 
     const handleClaim = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!canClaim || processing || data.qr_code.trim() === '') return;
+
         post(claim(schedule.id).url, {
             preserveScroll: true,
-            onSuccess: () => {
+            // Runs on success AND on error, so the field is always ready for the next scan.
+            onFinish: () => {
                 reset('qr_code');
                 qrInputRef.current?.focus();
             },
@@ -73,8 +113,23 @@ export default function Show() {
     };
 
     const handleReverse = (transactionId: number, familyHeadName: string) => {
-        if (confirm(`Reverse the claim for "${familyHeadName}"? This restores 1 box to stock.`)) {
+        if (
+            confirm(
+                `Reverse the claim for "${familyHeadName}"? This frees 1 box and lets them claim again.`,
+            )
+        ) {
             router.delete(destroy(transactionId).url, { preserveScroll: true });
+        }
+    };
+
+    const handleStatusChange = (next: 'ongoing' | 'completed') => {
+        const message =
+            next === 'ongoing'
+                ? 'Start this distribution? Claims will open.'
+                : 'Complete this distribution? Claims will close and cannot be reopened.';
+
+        if (confirm(message)) {
+            router.patch(updateStatus(schedule.id).url, { status: next }, { preserveScroll: true });
         }
     };
 
@@ -83,30 +138,66 @@ export default function Show() {
             <Head title={schedule.title} />
 
             <div className="p-6">
+                {/* Shows service messages: already claimed, stock zero, not eligible, wrong barangay, etc. */}
                 <FlashAlerts flash={flash} />
 
-                <div className="mb-6">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-ink">
-                        {schedule.title}
-                    </h1>
-                    <p className="mt-1 text-sm text-subtle">
-                        {schedule.date} · {schedule.barangay}
-                        {schedule.location ? ` · ${schedule.location}` : ''} · Box: {schedule.relief_pack.name}
-                    </p>
+                <div className="mb-6 flex items-start justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-extrabold tracking-tight text-ink">
+                                {schedule.title}
+                            </h1>
+                            <span
+                                className={
+                                    'rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ' +
+                                    (schedule.status === 'ongoing'
+                                        ? 'bg-green-100 text-green-700'
+                                        : schedule.status === 'completed'
+                                          ? 'bg-gray-200 text-gray-700'
+                                          : 'bg-orange-100 text-orange-700')
+                                }
+                            >
+                                {schedule.status}
+                            </span>
+                        </div>
+                        <p className="mt-1 text-sm text-subtle">
+                            {formatDate(schedule.date)} · {schedule.barangay}
+                            {schedule.location ? ` · ${schedule.location}` : ''} · Boxes: {packSummary}
+                        </p>
+                    </div>
+
+                    {schedule.status === 'pending' && (
+                        <Button
+                            type="button"
+                            onClick={() => handleStatusChange('ongoing')}
+                            className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
+                        >
+                            Start Distribution
+                        </Button>
+                    )}
+                    {schedule.status === 'ongoing' && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleStatusChange('completed')}
+                        >
+                            Complete Distribution
+                        </Button>
+                    )}
                 </div>
 
                 <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="rounded-xl border border-[#d1d5db] bg-white p-4">
                         <p className="text-xs font-medium uppercase tracking-wide text-subtle">Planned</p>
-                        <p className="text-2xl font-extrabold text-ink">{schedule.planned_quantity}</p>
+                        <p className="text-2xl font-extrabold text-ink">{plannedQuantity}</p>
                     </div>
                     <div className="rounded-xl border border-[#d1d5db] bg-white p-4">
                         <p className="text-xs font-medium uppercase tracking-wide text-subtle">Claimed</p>
-                        <p className="text-2xl font-extrabold text-ink">{schedule.transactions.length}</p>
+                        <p className="text-2xl font-extrabold text-ink">{claimedCount}</p>
                     </div>
                     <div className="rounded-xl border border-[#d1d5db] bg-white p-4">
                         <p className="text-xs font-medium uppercase tracking-wide text-subtle">Remaining Allocation</p>
-                        <p className="text-2xl font-extrabold text-brand-orange">{remainingAllocation}</p>
+                        <p className="text-2xl font-extrabold text-brand-orange">{remaining}</p>
                     </div>
                 </div>
 
@@ -119,17 +210,31 @@ export default function Show() {
                         1 box is released per family head. A family head can only claim once for this schedule.
                     </p>
 
-                    {Object.keys(errors).length > 0 && (
+                    {!isOngoing && (
+                        <Alert className="mb-3">
+                            <CircleAlert />
+                            <AlertTitle>Distribution is {schedule.status}</AlertTitle>
+                            <AlertDescription>
+                                Boxes can only be released while the distribution is ongoing.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    {isOngoing && outOfStock && (
+                        <Alert variant="destructive" className="mb-3">
+                            <CircleAlert />
+                            <AlertTitle>Stock is zero</AlertTitle>
+                            <AlertDescription>
+                                All boxes for this distribution have been released.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    {errors.qr_code && (
                         <Alert variant="destructive" className="mb-3">
                             <CircleAlert />
                             <AlertTitle>Cannot release box</AlertTitle>
-                            <AlertDescription>
-                                <ul className="list-inside list-disc text-sm">
-                                    {Object.entries(errors).map(([key, message]) => (
-                                        <li key={key}>{message as string}</li>
-                                    ))}
-                                </ul>
-                            </AlertDescription>
+                            <AlertDescription>{errors.qr_code}</AlertDescription>
                         </Alert>
                     )}
 
@@ -143,6 +248,8 @@ export default function Show() {
                                 ref={qrInputRef}
                                 type="text"
                                 autoFocus
+                                autoComplete="off"
+                                disabled={!canClaim}
                                 placeholder="Scan or type QR code"
                                 value={data.qr_code}
                                 onChange={(e) => setData('qr_code', e.target.value)}
@@ -151,7 +258,7 @@ export default function Show() {
                         </div>
                         <Button
                             type="submit"
-                            disabled={processing || remainingAllocation < 1}
+                            disabled={processing || !canClaim || data.qr_code.trim() === ''}
                             className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover disabled:opacity-60"
                         >
                             Release Box
@@ -172,32 +279,39 @@ export default function Show() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {schedule.transactions.length === 0 && (
+                            {transactions.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={6} className="py-10 text-center text-sm text-subtle">
                                         No boxes released yet for this schedule.
                                     </TableCell>
                                 </TableRow>
                             )}
-                            {schedule.transactions.map((tx) => (
+                            {transactions.map((tx) => (
                                 <TableRow
                                     key={tx.id}
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        {tx.beneficiary.family_head_name}
+                                        {tx.beneficiary?.family_head_name ?? '—'}
                                     </TableCell>
-                                    <TableCell className="text-ink">{tx.beneficiary.barangay}</TableCell>
-                                    <TableCell className="text-ink">{tx.beneficiary.family_size}</TableCell>
+                                    <TableCell className="text-ink">{tx.beneficiary?.barangay ?? '—'}</TableCell>
+                                    <TableCell className="text-ink">{tx.beneficiary?.family_size ?? '—'}</TableCell>
                                     <TableCell className="text-ink">{tx.verified_by?.name ?? '—'}</TableCell>
                                     <TableCell className="text-ink">
-                                        {new Date(tx.verification_timestamp).toLocaleString()}
+                                        {tx.verification_timestamp
+                                            ? new Date(tx.verification_timestamp).toLocaleString()
+                                            : '—'}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex justify-end">
                                             <button
                                                 type="button"
-                                                onClick={() => handleReverse(tx.id, tx.beneficiary.family_head_name)}
+                                                onClick={() =>
+                                                    handleReverse(
+                                                        tx.id,
+                                                        tx.beneficiary?.family_head_name ?? 'this beneficiary',
+                                                    )
+                                                }
                                                 className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger"
                                             >
                                                 <Undo2 className="h-4 w-4" />
