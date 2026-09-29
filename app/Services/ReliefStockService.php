@@ -23,6 +23,9 @@ class ReliefStockService
      *   'receipt'    => ['source_name' => '...', 'date_received' => 'Y-m-d'],
      *   'reliefList' => [['relief_pack_id' => 1, 'quantity' => 10], ...],
      * ]
+     *
+     * Rows with the same relief_pack_id are combined into one line
+     * (A:23 + A:43 => A:66) before anything is saved.
      */
     public function reliefStockStore(array $data): PackReceipt
     {
@@ -136,15 +139,20 @@ class ReliefStockService
     }
 
     /**
-     * Keep only the columns we allow, so extra keys in the input never reach the DB.
+     * Keep only the columns we allow, and combine rows that use the same
+     * relief pack into a single line with the quantities added together.
+     *
+     * [A:23, B:23, A:43] => [A:66, B:23]
      */
     private function lines(array $reliefList): array
     {
         return collect($reliefList)
-            ->map(fn (array $item) => [
-                'relief_pack_id' => $item['relief_pack_id'],
-                'quantity' => $item['quantity'],
+            ->groupBy('relief_pack_id')
+            ->map(fn ($rows, $packId) => [
+                'relief_pack_id' => (int) $packId,
+                'quantity' => (int) $rows->sum(fn ($row) => (int) $row['quantity']),
             ])
+            ->values()
             ->all();
     }
 }

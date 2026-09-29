@@ -91,20 +91,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     );
 
 
-
-    Route::prefix('pack-receipts')->name('pack-receipts.')->group(
-
-        function () {
-            Route::get('/', [PackReceiptController::class, 'index'])->name('index');
-            Route::post('/', [PackReceiptController::class, 'store'])->name('store');
-            Route::get('/create', [PackReceiptController::class, 'create'])->name('create');
-            Route::get('/{receipt}/edit', [PackReceiptController::class, 'edit'])->name('edit');
-            Route::put('/{receipt}', [PackReceiptController::class, 'update'])->name('update');
-            Route::delete('/{receipt}', [PackReceiptController::class, 'delete'])->name('delete');
-
-        }
-
-    );
+Route::prefix('pack-receipts')->name('pack-receipts.')->group(function () {
+    Route::get('/', [PackReceiptController::class, 'index'])->name('index');
+    Route::post('/', [PackReceiptController::class, 'store'])->name('store');
+    Route::get('/create', [PackReceiptController::class, 'create'])->name('create');
+    Route::get('/{packReceipt}/edit', [PackReceiptController::class, 'edit'])->name('edit');
+    Route::put('/{packReceipt}', [PackReceiptController::class, 'update'])->name('update');
+    Route::delete('/{packReceipt}', [PackReceiptController::class, 'destroy'])->name('delete');
+});
 
     Route::prefix('relief-packs')->name('relief-packs.')->group(
 

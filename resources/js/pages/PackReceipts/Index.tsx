@@ -10,8 +10,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ChevronLeft, ChevronRight, Search, Trash2, X } from 'lucide-react';
-import { deleteMethod, index } from '@/routes/pack-receipts';
+import { ChevronLeft, ChevronRight, Pencil, Search, Trash2, X } from 'lucide-react';
+import { deleteMethod, edit, index } from '@/routes/pack-receipts';
 import FlashAlerts from '@/components/flash-alerts';
 
 interface ReceiptItem {
@@ -216,6 +216,14 @@ export default function Index() {
                                         </TableCell>
                                         <TableCell className="align-top">
                                             <div className="flex items-center justify-end gap-4">
+                                                <Link
+                                                    href={edit(receipt.id).url}
+                                                    className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                    Edit
+                                                </Link>
+
                                                 <button
                                                     type="button"
                                                     disabled={processing}

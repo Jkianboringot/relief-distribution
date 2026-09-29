@@ -28,9 +28,37 @@ interface Props {
     reliefPacks: ReliefPack[];
 }
 
+/**
+ * Combine rows that use the same relief pack into one row.
+ * [A:23, B:23, A:43] => [A:66, B:23]
+ * Rows with no pack selected are kept as-is so the server can flag them.
+ */
+function mergeReliefList(list: ReliefListItem[]): ReliefListItem[] {
+    const totals = new Map<string, number>();
+    const unselected: ReliefListItem[] = [];
+
+    list.forEach((row) => {
+        if (!row.relief_pack_id) {
+            unselected.push(row);
+            return;
+        }
+        totals.set(
+            row.relief_pack_id,
+            (totals.get(row.relief_pack_id) ?? 0) + Number(row.quantity || 0),
+        );
+    });
+
+    const merged = Array.from(totals, ([relief_pack_id, quantity]) => ({
+        relief_pack_id,
+        quantity: String(quantity),
+    }));
+
+    return [...merged, ...unselected];
+}
+
 export default function Create({ reliefPacks }: Props) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
-    const { data, setData, post, processing, errors } = useForm<ReceiptForm>({
+    const { data, setData, post, processing, errors, transform } = useForm<ReceiptForm>({
         source_name: '',
         date_received: '',
         reliefList: [{ relief_pack_id: '', quantity: '' }],
@@ -38,6 +66,13 @@ export default function Create({ reliefPacks }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Send the merged list; the server also merges as a safety net.
+        transform((formData) => ({
+            ...formData,
+            reliefList: mergeReliefList(formData.reliefList),
+        }));
+
         post(store().url);
     };
 

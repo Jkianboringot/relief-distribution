@@ -26,7 +26,6 @@ class BeneficiarySeeder extends Seeder
                     'address' => fake()->streetAddress(),
                     'household_members' => fake()->numberBetween(1, 8),
                     'qr_code' => (string) Str::uuid(),
-                    'status' => 'unclaimed',
                     'registered_by' => $registrar->id,
                 ]);
             }
