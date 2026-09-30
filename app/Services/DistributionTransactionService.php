@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
 class DistributionTransactionService
 {
     /**
-     * @throws \DomainException            not eligible / wrong barangay / already claimed / schedule not ongoing / no packs configured
-     * @throws InsufficientStockException  any pack on the schedule is out of stock
+     * @throws \DomainException            not eligible / wrong barangay / already claimed / schedule not ongoing / not entitled to anything
+     * @throws InsufficientStockException  any entitled pack can't fulfil this beneficiary's full entitlement
      */
     public function claim(DistributionSchedule $schedule, string $qrCode, int $verifiedBy): DistributionTransaction
     {
@@ -45,51 +45,69 @@ class DistributionTransactionService
                     throw new \DomainException("{$beneficiary->full_name} has already claimed.");
                 }
 
-                // Every pack type on this schedule, and how many boxes were planned for it in total.
-                $planned = $schedule->reliefStock()
-                    ->get(['relief_pack_id', 'quantity'])
-                    ->groupBy('relief_pack_id')
-                    ->map(fn ($rows) => (int) $rows->sum('quantity'));
+                // Every pack line on the schedule, with its default per-beneficiary entitlement.
+                $lines = $schedule->reliefStock()
+                    ->with('reliefPack:id,name')
+                    ->get(['id', 'relief_pack_id', 'quantity', 'entitlement_per_beneficiary']);
 
-                if ($planned->isEmpty()) {
+                if ($lines->isEmpty()) {
                     throw new \DomainException('No relief packs configured for this distribution.');
                 }
 
-                // How many boxes of each pack type have already been given out (claimed only).
+                // This beneficiary's pre-assigned overrides for THIS schedule, keyed by pack.
+                // A pack with no override here just uses the pack line's default entitlement.
+                $overrides = $schedule->allocations()
+                    ->where('beneficiary_id', $beneficiary->id)
+                    ->pluck('quantity', 'relief_pack_id');
+
+                // How much of each pack has already been handed out (claimed only).
                 $given = $schedule->transactionItems()
-                    ->whereIn('relief_pack_id', $planned->keys())
-                    ->whereHas('transaction', fn ($q) => $q->where('status',ClaimStatus::Claim->value))
+                    ->whereIn('relief_pack_id', $lines->pluck('relief_pack_id'))
+                    ->whereHas('transaction', fn ($q) => $q->where('status', ClaimStatus::Claim->value))
                     ->selectRaw('relief_pack_id, SUM(quantity) as total')
                     ->groupBy('relief_pack_id')
                     ->pluck('total', 'relief_pack_id');
 
-                // A claim is 1 box of EVERY pack type on the schedule (a bundle).
-                // If any single pack is out of stock, the whole bundle can't be released.
-                foreach ($planned as $packId => $totalPlanned) {
-                    $remaining = $totalPlanned - (int) ($given[$packId] ?? 0);
+                // Resolve THIS beneficiary's real entitlement per pack: override wins,
+                // the pack line's default is the fallback. A resolved entitlement of 0
+                // means this beneficiary simply isn't owed that pack at all.
+                $entitlements = $lines->mapWithKeys(function ($line) use ($overrides) {
+                    $qty = $overrides->has($line->relief_pack_id)
+                        ? (int) $overrides[$line->relief_pack_id]
+                        : (int) $line->entitlement_per_beneficiary;
 
-                    if ($remaining < 1) {
-                        $packName = $schedule->reliefStock()
-                            ->with('reliefPack:id,name')
-                            ->where('relief_pack_id', $packId)
-                            ->first()?->reliefPack?->name ?? "Pack #{$packId}";
+                    return [$line->relief_pack_id => $qty];
+                })->filter(fn ($qty) => $qty > 0);
 
-                        throw new InsufficientStockException("Stock is already zero for {$packName}.");
+                if ($entitlements->isEmpty()) {
+                    throw new \DomainException('This family head is not entitled to any pack in this distribution.');
+                }
+
+                // Check EVERY entitled pack can be fully covered BEFORE releasing anything.
+                foreach ($entitlements as $packId => $entitlement) {
+                    $line = $lines->firstWhere('relief_pack_id', $packId);
+                    $remaining = (int) $line->quantity - (int) ($given[$packId] ?? 0);
+
+                    if ($remaining < $entitlement) {
+                        $packName = $line->reliefPack?->name ?? "Pack #{$packId}";
+                        throw new InsufficientStockException(
+                            "Not enough {$packName} left: this family head is entitled to {$entitlement}, only {$remaining} remain."
+                        );
                     }
                 }
 
                 $transaction = $schedule->transactions()->create([
                     'beneficiary_id'         => $beneficiary->id,
-                    'quantity_boxes'         => $planned->count(),
+                    'quantity_boxes'         => (int) $entitlements->sum(),
                     'verified_by'            => $verifiedBy,
                     'verification_timestamp' => now(),
                     'status'                 => ClaimStatus::Claim->value,
                 ]);
 
-                foreach ($planned->keys() as $packId) {
+                foreach ($entitlements as $packId => $qty) {
                     $transaction->items()->create([
                         'relief_pack_id' => $packId,
-                        'quantity' => 1,
+                        'quantity' => $qty,
                     ]);
                 }
 

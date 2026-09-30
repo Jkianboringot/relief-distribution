@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { CircleAlert, QrCode, Undo2 } from 'lucide-react';
 import FlashAlerts from '@/components/flash-alerts';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -15,6 +15,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { claim, status as updateStatus } from '@/routes/distribution';
+import { edit as editAllocations } from '@/routes/distribution/allocations';
 import { destroy } from '@/routes/distribution-transactions';
 
 interface Beneficiary {
@@ -143,10 +144,36 @@ export default function Show() {
 
                 <div className="mb-6 flex items-start justify-between gap-4">
                     <div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             <h1 className="text-3xl font-extrabold tracking-tight text-ink">
                                 {schedule.title}
                             </h1>
+
+                            {schedule.status === 'pending' && (
+                                <Button
+                                    type="button"
+                                    onClick={() => handleStatusChange('ongoing')}
+                                    className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
+                                >
+                                    Start Distribution
+                                </Button>
+                            )}
+                            {schedule.status === 'ongoing' && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => handleStatusChange('completed')}
+                                >
+                                    Complete Distribution
+                                </Button>
+                            )}
+
+                            <Link href={editAllocations(schedule.id).url}>
+                                <Button type="button" variant="outline">
+                                    Manage Allocations
+                                </Button>
+                            </Link>
+
                             <span
                                 className={
                                     'rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ' +
@@ -165,25 +192,6 @@ export default function Show() {
                             {schedule.location ? ` · ${schedule.location}` : ''} · Boxes: {packSummary}
                         </p>
                     </div>
-
-                    {schedule.status === 'pending' && (
-                        <Button
-                            type="button"
-                            onClick={() => handleStatusChange('ongoing')}
-                            className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
-                        >
-                            Start Distribution
-                        </Button>
-                    )}
-                    {schedule.status === 'ongoing' && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => handleStatusChange('completed')}
-                        >
-                            Complete Distribution
-                        </Button>
-                    )}
                 </div>
 
                 <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -207,7 +215,8 @@ export default function Show() {
                         Scan / Enter QR to Release Box
                     </h2>
                     <p className="mb-3 text-sm text-subtle">
-                        1 box is released per family head. A family head can only claim once for this schedule.
+                        Each family head receives their assigned entitlement per pack. A family head can only
+                        claim once for this schedule.
                     </p>
 
                     {!isOngoing && (

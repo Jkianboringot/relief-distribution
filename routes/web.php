@@ -23,6 +23,7 @@
 |--------------------------------------------------------------------------
 */
 
+use App\Http\Controllers\AllocationController;
 use App\Http\Controllers\BarangayController;
 use App\Http\Controllers\BenificiaryController;
 use App\Http\Controllers\DashboardController;
@@ -157,18 +158,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ADMIN: CAN view, create, edit, delete, update status, claim
     // BRGY:  CAN view schedules (index/show) and claim (scan QR, approve release)
     //        CANNOT create, edit, delete schedules or change schedule status
-    Route::prefix('distribution')->name('distribution.')->group(function () {
-        Route::get('/', [DistributionScheduleController::class, 'index'])->name('index');
-        Route::get('/create', [DistributionScheduleController::class, 'create'])->name('create');
-        Route::post('/', [DistributionScheduleController::class, 'store'])->name('store');
-        Route::get('/{schedule}', [DistributionScheduleController::class, 'show'])->name('show');
-        Route::get('/{schedule}/edit', [DistributionScheduleController::class, 'edit'])->name('edit');
-        Route::put('/{schedule}', [DistributionScheduleController::class, 'update'])->name('update');
-        Route::delete('/{schedule}', [DistributionScheduleController::class, 'destroy'])->name('destroy');
-        Route::post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])->name('claim');
-        Route::patch('{schedule}/status', [DistributionScheduleController::class, 'updateStatus'])
-            ->name('status');
+  Route::prefix('distribution')->name('distribution.')->group(function () {
+    Route::get('/', [DistributionScheduleController::class, 'index'])->name('index');
+    Route::get('/create', [DistributionScheduleController::class, 'create'])->name('create');
+    Route::post('/', [DistributionScheduleController::class, 'store'])->name('store');
+    Route::get('/{schedule}', [DistributionScheduleController::class, 'show'])->name('show');
+    Route::get('/{schedule}/edit', [DistributionScheduleController::class, 'edit'])->name('edit');
+    Route::put('/{schedule}', [DistributionScheduleController::class, 'update'])->name('update');
+    Route::delete('/{schedule}', [DistributionScheduleController::class, 'destroy'])->name('destroy');
+    Route::post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])->name('claim');
+    Route::patch('/{schedule}/status', [DistributionScheduleController::class, 'updateStatus'])->name('status');
+
+    Route::prefix('{schedule}/allocations')->name('allocations.')->group(function () {
+        Route::get('/', [AllocationController::class, 'edit'])->name('edit');
+        Route::get('/search', [AllocationController::class, 'search'])->name('search');
+        Route::post('/', [AllocationController::class, 'store'])->name('store');
     });
+
+    Route::delete('/allocations/{allocation}', [AllocationController::class, 'destroy'])
+        ->name('allocations.destroy');
+});
 
 
     // DISTRIBUTION TRANSACTIONS - ADMIN: CAN delete (correct/void a record)
@@ -187,6 +196,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/export', [ReportController::class, 'export'])->name('export');
     });
+
+
 });
 
 require __DIR__ . '/settings.php';

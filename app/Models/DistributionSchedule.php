@@ -96,4 +96,9 @@ class DistributionSchedule extends Model
     {
         return max(0, $this->plannedQuantity() - $this->distributedQuantity());
     }
+
+    public function allocations(): HasMany
+{
+    return $this->hasMany(DistributionBeneficiaryAllocation::class);
+}
 }

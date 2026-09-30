@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\InsufficientStockException;
+use App\Models\DistributionBeneficiaryAllocation;
 use App\Models\DistributionReliefStock;
 use App\Models\DistributionSchedule;
 use App\Models\ReliefPack;
@@ -235,4 +236,27 @@ class DistributionStockService
             ])
             ->all();
     }
+
+public function setBeneficiaryAllocations(DistributionSchedule $schedule, array $allocations, int $assignedBy): void
+{
+    DB::transaction(function () use ($schedule, $allocations, $assignedBy) {
+        foreach ($allocations as $row) {
+            $schedule->allocations()->updateOrCreate(
+                [
+                    'beneficiary_id' => $row['beneficiary_id'],
+                    'relief_pack_id' => $row['relief_pack_id'],
+                ],
+                [
+                    'quantity' => $row['quantity'],
+                    'assigned_by' => $assignedBy,
+                ]
+            );
+        }
+    });
+}
+
+public function removeBeneficiaryAllocation(DistributionBeneficiaryAllocation $allocation): void
+{
+    $allocation->delete();
+}
 }
