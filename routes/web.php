@@ -47,7 +47,7 @@ Route::get('/scan/{qr_code}', [BenificiaryController::class, 'scan'])
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // ADMIN: CAN view (full analytics) | BRGY: CAN view (limited to own barangay ideally)
+    // ADMIN: CAN view (full analytics) | BRGY: CAN view (limited to own barangay idealgly)
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     // BARANGAYS - ADMIN: CAN (view, create, edit, delete) | BRGY: CANNOT

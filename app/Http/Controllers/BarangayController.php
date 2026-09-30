@@ -107,6 +107,7 @@ class BarangayController extends Controller
             ->when($request->string('search')->trim(), function ($query, $search) {
                 $query->where('name', 'like', "{$search}%");
             })
+            ->orderBy('name','desc')
             ->paginate(15)
             ->withQueryString();
 

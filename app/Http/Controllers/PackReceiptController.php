@@ -28,16 +28,16 @@ class PackReceiptController extends Controller
             ->when($search !== '', function ($query) use ($search) {
                 $query->where('source_name', 'like', "{$search}%");
             })
-            ->orderBy('source_name')
-            ->orderBy('id')
+            ->orderByDesc('created_at')
+
             ->paginate(15)
             ->withQueryString()
-            ->through(fn ($receipt) => [
+            ->through(fn($receipt) => [
                 'id' => $receipt->id,
                 'source_name' => $receipt->source_name,
                 'date_received' => $receipt->date_received?->format('Y-m-d'),
                 'total_quantity' => (int) $receipt->total_quantity,
-                'items' => $receipt->reliefStock->map(fn ($stock) => [
+                'items' => $receipt->reliefStock->map(fn($stock) => [
                     'id' => $stock->id,
                     'name' => $stock->reliefPack?->name ?? 'Unknown pack',
                     'quantity' => (int) $stock->quantity,
@@ -76,7 +76,7 @@ class PackReceiptController extends Controller
 
         // your current service returns null on failure instead of throwing;
         // keep this until the service is changed to let exceptions bubble
-        if (! $receipt) {
+        if (!$receipt) {
             return back()->with('error', 'Failed to record relief stock.');
         }
 
@@ -94,7 +94,7 @@ class PackReceiptController extends Controller
                 'id' => $packReceipt->id,
                 'source_name' => $packReceipt->source_name,
                 'date_received' => $packReceipt->date_received?->format('Y-m-d'),
-                'reliefList' => $packReceipt->reliefStock->map(fn ($stock) => [
+                'reliefList' => $packReceipt->reliefStock->map(fn($stock) => [
                     'relief_pack_id' => $stock->relief_pack_id,
                     'quantity' => (int) $stock->quantity,
                 ])->values(),

@@ -41,7 +41,6 @@ class BenificiaryController extends Controller
             Benificiary::create([
                 ...$validated,
                 'qr_code' => $this->generateQrCode($validated['barangay_id']),
-                'status' => 'unclaimed',
                 'registered_by' => $request->user()->id,
             ]);
         } catch (\Throwable $th) {

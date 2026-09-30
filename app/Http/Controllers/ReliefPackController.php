@@ -15,7 +15,8 @@ class ReliefPackController extends Controller
     public function index(): Response
     {
         $reliefPacks = ReliefPack::withSum('reliefStock as current_stock', 'quantity')
-            ->orderBy('name')
+            ->orderByDesc('created_at')
+            
             ->get()
             ->each(fn($pack) => $pack->current_stock = (int) $pack->current_stock);
 // dd($reliefPacks);

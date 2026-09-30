@@ -32,8 +32,7 @@ class DistributionScheduleController extends Controller
                     $query->where('status', 'claimed');
                 }
             ])
-            ->orderByDesc('date')
-            ->orderByDesc('id')
+            ->orderByDesc('created_at')
             ->get()
             ->map(fn($schedule) => [
                 'id' => $schedule->id,
