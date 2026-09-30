@@ -74,11 +74,17 @@ class Benificiary extends Model
      * The URL a phone opens when it scans this beneficiary's QR code.
      * Built from `qr_code`, so it must be reachable from the scanner's
      * device — APP_URL can't be localhost when scanning from a phone.
-     */   public function scanUrl(): string
-    {
-        return route('beneficiaries.scan', ['qr_code' => $this->qr_code]);
-    }
+     */ 
+    //   public function scanUrl(): string
+    // {
+    //     return route('beneficiaries.scan', ['qr_code' => $this->qr_code]);
+    // }
  
+
+    public function scanUrl(): string
+{
+    return route('scan.show', ['qr_code' => $this->qr_code]);
+}
     /**
      * Renders the QR code for scanUrl() as a PNG (binary string).
      * PngWriter needs the GD extension (extension=gd in php.ini).

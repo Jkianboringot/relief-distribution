@@ -35,6 +35,7 @@ use App\Http\Controllers\DistributionTransactionController;
 use App\Http\Controllers\PackReceiptController;
 use App\Http\Controllers\ReliefPackController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScanController;
 
 Route::redirect('/', 'dashboard')->name('home');
 
@@ -44,6 +45,12 @@ Route::redirect('/', 'dashboard')->name('home');
 // WARNING: anyone with the link can open it. Consider putting it behind auth.
 Route::get('/scan/{qr_code}', [BenificiaryController::class, 'scan'])
     ->name('beneficiaries.scan');
+
+   Route::middleware('auth')->group(function () {
+    Route::get('/scan', [ScanController::class, 'live'])->name('scan.live');
+    Route::get('/scan/{qr_code}', [ScanController::class, 'show'])->name('scan.show');
+    Route::post('/scan/{qr_code}/confirm', [ScanController::class, 'confirm'])->name('scan.confirm');
+});
 
 
 Route::middleware(['auth', 'verified'])->group(function () {

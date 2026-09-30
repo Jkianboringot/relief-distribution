@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { CircleAlert, QrCode, Undo2 } from 'lucide-react';
+import { Camera, CameraOff, CircleAlert, QrCode, Undo2 } from 'lucide-react';
 import FlashAlerts from '@/components/flash-alerts';
+import QrScanner from '@/components/qr-scanner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +18,7 @@ import {
 import { claim, status as updateStatus } from '@/routes/distribution';
 import { edit as editAllocations } from '@/routes/distribution/allocations';
 import { destroy } from '@/routes/distribution-transactions';
-
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 interface Beneficiary {
     id: number;
     family_head_name: string;
@@ -93,8 +94,12 @@ export default function Show() {
                   .map((s) => `${s.relief_pack?.name ?? 'Unknown pack'} × ${s.quantity}`)
                   .join(', ');
 
-    const { data, setData, post, processing, errors, reset, transform } = useForm({ qr_code: '' });
+    const { data, setData, post, processing, errors, reset, transform, setError, clearErrors } =
+        useForm({ qr_code: '' });
     const qrInputRef = useRef<HTMLInputElement>(null);
+    const [cameraOn, setCameraOn] = useState(false);
+    // Camera fires repeatedly while a code stays in frame; this blocks duplicate submits.
+    const submittingRef = useRef(false);
 
     // Hardware scanners can append whitespace/newlines.
     transform((d) => ({ ...d, qr_code: d.qr_code.trim() }));
@@ -112,6 +117,51 @@ export default function Show() {
             },
         });
     };
+
+    const submitClaim = useCallback(
+        (code: string) => {
+            if (!canClaim || processing || submittingRef.current) return;
+
+            submittingRef.current = true;
+            clearErrors();
+
+            router.post(
+                claim(schedule.id).url,
+                { qr_code: code },
+                {
+                    preserveScroll: true,
+                    // router.post doesn't feed useForm's errors, so pass them along manually.
+                    onError: (errs) => {
+                        if (errs.qr_code) setError('qr_code', errs.qr_code);
+                    },
+                    onFinish: () => {
+                        submittingRef.current = false;
+                        reset('qr_code');
+                        qrInputRef.current?.focus();
+                    },
+                },
+            );
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [canClaim, processing, schedule.id],
+    );
+
+    // Camera decodes the same printed QR that encodes the full /scan/{qr_code}
+    // URL, so pull the code back out the same way the dedicated scan page does.
+    const handleCameraScan = useCallback(
+        (decodedText: string) => {
+            let code = decodedText.trim();
+            try {
+                const url = new URL(code);
+                const parts = url.pathname.split('/').filter(Boolean);
+                code = parts[parts.length - 1] ?? code;
+            } catch {
+                // not a URL — assume it's the raw code
+            }
+            submitClaim(code);
+        },
+        [submitClaim],
+    );
 
     const handleReverse = (transactionId: number, familyHeadName: string) => {
         if (
@@ -210,14 +260,40 @@ export default function Show() {
                 </div>
 
                 <div className="mb-6 rounded-xl border border-[#d1d5db] bg-white p-5">
-                    <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-ink">
-                        <QrCode className="h-5 w-5 text-brand-orange" />
-                        Scan / Enter QR to Release Box
-                    </h2>
+                    <div className="mb-3 flex items-center justify-between">
+                        <h2 className="flex items-center gap-2 text-lg font-bold text-ink">
+                            <QrCode className="h-5 w-5 text-brand-orange" />
+                            Scan / Enter QR to Release Box
+                        </h2>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={!canClaim}
+                            onClick={() => setCameraOn((v) => !v)}
+                        >
+                            {cameraOn ? (
+                                <>
+                                    <CameraOff className="mr-1.5 h-4 w-4" />
+                                    Stop Camera
+                                </>
+                            ) : (
+                                <>
+                                    <Camera className="mr-1.5 h-4 w-4" />
+                                    Use Camera
+                                </>
+                            )}
+                        </Button>
+                    </div>
+
                     <p className="mb-3 text-sm text-subtle">
                         Each family head receives their assigned entitlement per pack. A family head can only
                         claim once for this schedule.
                     </p>
+
+                    {cameraOn && canClaim && (
+                        <QrScanner active={cameraOn} onScan={handleCameraScan} className="mb-4" />
+                    )}
 
                     {!isOngoing && (
                         <Alert className="mb-3">
