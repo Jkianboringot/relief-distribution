@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\InsufficientStockException;
+use App\Models\Benificiary;
 use App\Models\DistributionBeneficiaryAllocation;
 use App\Models\DistributionReliefStock;
 use App\Models\DistributionSchedule;
@@ -11,95 +12,63 @@ use App\Models\ReliefStock;
 use Illuminate\Support\Facades\DB;
 
 /**
- * OUT side of the ledger:
- *   distribution_schedules (header) -> distribution_relief_stocks (one row per pack line)
- * Stock per pack = SUM(relief_stocks) - SUM(distribution_relief_stocks).
+ * OUT side of the ledger.
  *
- * Methods do not catch exceptions. DB::transaction() rolls back on throw,
- * and the controller decides what to show the user.
+ * A schedule no longer states its own pack quantities up front. Instead:
+ *   distribution_beneficiary_allocations (who gets what, how much)
+ *     -> summed per pack ->
+ *   distribution_relief_stocks.quantity (kept in sync, read-only from the UI's point of view)
+ *
+ * Stock per pack, globally = SUM(relief_stocks) - SUM(distribution_relief_stocks) across ALL schedules.
+ * That global check still happens here, now triggered by allocation changes instead of schedule creation.
  */
 class DistributionStockService
 {
     /**
-     * $data = [
-     *   'schedule'   => ['title' => '...', 'date' => 'Y-m-d', 'location' => '...', 'barangay_id' => 1],
-     *   'reliefList' => [['relief_pack_id' => 1, 'quantity' => 50, 'entitlement_per_beneficiary' => 2], ...],
-     * ]
-     *
-     * @throws InsufficientStockException
+     * Schedule header only — no pack lines. Packs are attached later via allocations.
      */
-    public function distributionStore(array $data): DistributionSchedule
+    public function distributionStore(array $schedule): DistributionSchedule
     {
-        return DB::transaction(function () use ($data) {
-            $lines = $this->lines($data['reliefList']);
+        return DB::transaction(function () use ($schedule) {
+            $model = new DistributionSchedule();
+            $model->fill($schedule);
+            $model->created_by = auth()->id();
+            $model->save();
 
-            $this->guardStock($lines);
-
-            $schedule = new DistributionSchedule();
-            $schedule->fill($data['schedule']);
-            $schedule->created_by = auth()->id();
-            $schedule->save();
-
-            $schedule->reliefStock()->createMany($lines);
-
-            return $schedule;
+            return $model;
         });
     }
 
-    /**
-     * Same $data shape as distributionStore. created_by and status are untouched.
-     *
-     * @throws InsufficientStockException
-     */
     public function distributionUpdate(DistributionSchedule $schedule, array $data): DistributionSchedule
     {
         return DB::transaction(function () use ($schedule, $data) {
-            $lines = $this->lines($data['reliefList']);
-
-            $this->guardStock($lines, $schedule);
-
-            $schedule->update($data['schedule']);
-            $schedule->reliefStock()->delete();
-            $schedule->reliefStock()->createMany($lines);
+            $schedule->update($data);
 
             return $schedule;
         });
     }
 
     /**
-     * Deleting an OUT record only returns stock, so no stock check is needed.
+     * Deleting a schedule frees everything: its allocations and its relief stock lines.
      *
-     * @throws \DomainException if the schedule is completed,
-     *                          or if beneficiaries already have transactions on it
+     * @throws \DomainException if beneficiaries already have transactions on this schedule
      */
     public function distributionDelete(DistributionSchedule $schedule): void
     {
         DB::transaction(function () use ($schedule) {
-            // Lock so a status change can't slip in while we are deleting.
-            $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
-
-            if ($schedule->status === 'completed') {
-                throw new \DomainException('Cannot delete a completed distribution.');
-            }
-
             if ($schedule->transactions()->exists()) {
                 throw new \DomainException('Cannot delete a schedule that already has beneficiary transactions.');
             }
 
+            $schedule->allocations()->delete();
             $schedule->reliefStock()->delete();
             $schedule->delete();
         });
     }
 
-    /**
-     * Allowed flow: pending -> ongoing -> completed.
-     *
-     * @throws \DomainException
-     */
     public function distributionSetStatus(DistributionSchedule $schedule, string $status): DistributionSchedule
     {
         return DB::transaction(function () use ($schedule, $status) {
-            // Lock so a claim in progress can't overlap with a status change.
             $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
 
             $allowed = [
@@ -112,11 +81,7 @@ class DistributionStockService
             }
 
             if ($status === 'ongoing' && $schedule->reliefStock()->sum('quantity') < 1) {
-                throw new \DomainException('Add relief stock to this distribution before starting it.');
-            }
-
-            if ($status === 'completed') {
-                $this->guardFullyGivenOut($schedule);
+                throw new \DomainException('Allocate at least one beneficiary before starting this distribution.');
             }
 
             $schedule->status = $status;
@@ -127,54 +92,127 @@ class DistributionStockService
     }
 
     /**
-     * A distribution can only be completed when every relief pack assigned to it
-     * has been fully given out (nothing left over).
+     * $allocations = [
+     *   ['beneficiary_id' => 900, 'relief_pack_id' => 1, 'quantity' => 2],
+     *   ...
+     * ]
      *
-     * Given out per pack = (number of beneficiary transactions) x entitlement_per_beneficiary.
-     * Must be called inside a transaction.
-     *
-     * @throws \DomainException listing the packs that still have items left
+     * @throws \DomainException            beneficiary not in this schedule's barangay, or would reduce
+     *                                      a pack below what's already been claimed
+     * @throws InsufficientStockException  the new total for a pack exceeds what's globally available
      */
-    private function guardFullyGivenOut(DistributionSchedule $schedule): void
+    public function setBeneficiaryAllocations(DistributionSchedule $schedule, array $allocations, int $assignedBy): void
     {
-        $lines = $schedule->reliefStock()
-            ->get(['relief_pack_id', 'quantity', 'entitlement_per_beneficiary']);
+        DB::transaction(function () use ($schedule, $allocations, $assignedBy) {
+            $schedule = DistributionSchedule::whereKey($schedule->id)->lockForUpdate()->firstOrFail();
 
-        if ($lines->isEmpty()) {
-            throw new \DomainException('This distribution has no relief stock, so it cannot be completed.');
-        }
+            // Eligibility, as confirmed: barangay residency only.
+            $beneficiaryIds = collect($allocations)->pluck('beneficiary_id')->unique();
+            $ineligible = Benificiary::whereIn('id', $beneficiaryIds)
+                ->where('barangay_id', '!=', $schedule->barangay_id)
+                ->pluck('id');
 
-        // ASSUMPTION: every row in transactions() is one beneficiary who already received
-        // their entitlement. If transactions have a status column (e.g. pending/claimed),
-        // filter it here, for example: ->where('status', 'claimed')
-        $beneficiariesServed = $schedule->transactions()->count();
-
-        $names = ReliefPack::whereIn('id', $lines->pluck('relief_pack_id'))->pluck('name', 'id');
-
-        $leftovers = [];
-
-        foreach ($lines as $line) {
-            $givenOut = $beneficiariesServed * (int) $line->entitlement_per_beneficiary;
-            $remaining = (int) $line->quantity - $givenOut;
-
-            if ($remaining > 0) {
-                $name = $names[$line->relief_pack_id] ?? "Pack #{$line->relief_pack_id}";
-                $leftovers[] = "{$name} ({$remaining} left)";
+            if ($ineligible->isNotEmpty()) {
+                throw new \DomainException('One or more beneficiaries are not registered in this barangay.');
             }
-        }
 
-        if ($leftovers !== []) {
-            throw new \DomainException(
-                'Cannot complete this distribution until all relief packs are given out. Remaining: '
-                . implode(', ', $leftovers) . '.'
-            );
-        }
+            // Full picture per (beneficiary, pack): existing rows, with the incoming
+            // batch overriding matching pairs (this is how an edit to an existing
+            // allocation is represented — same beneficiary+pack, new quantity).
+            $existingRows = $schedule->allocations()->get(['beneficiary_id', 'relief_pack_id', 'quantity']);
+            $merged = $existingRows->keyBy(fn ($r) => "{$r->beneficiary_id}:{$r->relief_pack_id}");
+
+            foreach ($allocations as $row) {
+                $merged->put("{$row['beneficiary_id']}:{$row['relief_pack_id']}", (object) $row);
+            }
+
+            // New total per pack, across the WHOLE schedule, after this batch applies.
+            $newTotalsByPack = $merged->groupBy('relief_pack_id')
+                ->map(fn ($rows) => (int) collect($rows)->sum('quantity'));
+
+            // Never let an edit shrink a pack's total below what's already been claimed
+            // against it on this schedule — that stock is already physically gone.
+            $alreadyGiven = $schedule->transactionItems()
+                ->whereIn('relief_pack_id', $newTotalsByPack->keys())
+                ->whereHas('transaction', fn ($q) => $q->where('status', 'claimed'))
+                ->selectRaw('relief_pack_id, SUM(quantity) as total')
+                ->groupBy('relief_pack_id')
+                ->pluck('total', 'relief_pack_id');
+
+            foreach ($newTotalsByPack as $packId => $newTotal) {
+                $given = (int) ($alreadyGiven[$packId] ?? 0);
+
+                if ($newTotal < $given) {
+                    $name = ReliefPack::find($packId)?->name ?? "Pack #{$packId}";
+                    throw new \DomainException(
+                        "Can't reduce {$name} below {$given}, since that many have already been claimed."
+                    );
+                }
+            }
+
+            // Reuses the same global-stock guard used when schedule pack lines were edited
+            // directly. Passing $schedule as $existing frees this schedule's OWN previously
+            // committed amount before checking the new total against what's really available.
+            $lines = $newTotalsByPack->map(fn ($qty, $packId) => [
+                'relief_pack_id' => $packId,
+                'quantity' => $qty,
+            ])->values()->all();
+
+            $this->guardStock($lines, $schedule);
+
+            // Safe to write.
+            foreach ($allocations as $row) {
+                $schedule->allocations()->updateOrCreate(
+                    ['beneficiary_id' => $row['beneficiary_id'], 'relief_pack_id' => $row['relief_pack_id']],
+                    ['quantity' => $row['quantity'], 'assigned_by' => $assignedBy]
+                );
+            }
+
+            // Sync distribution_relief_stocks.quantity to match — this is what makes
+            // "stock = how many beneficiaries were added" actually true everywhere else
+            // in the app (Show.tsx's Planned/Remaining, remainingForPack(), etc.).
+            foreach ($newTotalsByPack as $packId => $qty) {
+                $schedule->reliefStock()->updateOrCreate(
+                    ['relief_pack_id' => $packId],
+                    ['quantity' => $qty]
+                );
+            }
+        });
+    }
+
+    public function removeBeneficiaryAllocation(DistributionBeneficiaryAllocation $allocation): void
+    {
+        DB::transaction(function () use ($allocation) {
+            $schedule = DistributionSchedule::whereKey($allocation->distribution_schedule_id)
+                ->lockForUpdate()->firstOrFail();
+
+            $packId = $allocation->relief_pack_id;
+            $allocation->delete();
+
+            $newTotal = (int) $schedule->allocations()->where('relief_pack_id', $packId)->sum('quantity');
+
+            $given = (int) $schedule->transactionItems()
+                ->where('relief_pack_id', $packId)
+                ->whereHas('transaction', fn ($q) => $q->where('status', 'claimed'))
+                ->sum('quantity');
+
+            // Never let the line drop below what's already been physically given out.
+            $floor = max($newTotal, $given);
+
+            if ($floor > 0) {
+                $schedule->reliefStock()->where('relief_pack_id', $packId)->update(['quantity' => $floor]);
+            } else {
+                // Nobody left allocated to this pack, and nothing claimed against it yet — drop the line.
+                $schedule->reliefStock()->where('relief_pack_id', $packId)->delete();
+            }
+        });
     }
 
     /**
-     * Checks every requested pack has enough stock.
-     * When editing, pass the existing schedule: its old lines count as free stock again.
-     * Must be called inside a transaction.
+     * Checks a set of per-pack totals against real global availability.
+     * When $existing is passed, that schedule's OWN current committed amount is
+     * added back as "free" before comparing — i.e. this schedule's prior claim on
+     * stock doesn't count against itself while being resized.
      *
      * @throws InsufficientStockException
      */
@@ -182,7 +220,7 @@ class DistributionStockService
     {
         $requested = collect($lines)
             ->groupBy('relief_pack_id')
-            ->map(fn ($rows) => (int) $rows->sum('quantity'));
+            ->map(fn ($rows) => (int) collect($rows)->sum('quantity'));
 
         $old = $existing
             ? $existing->reliefStock()
@@ -197,7 +235,6 @@ class DistributionStockService
             return;
         }
 
-        // Lock the pack rows so two requests for the same pack run one after the other.
         $packs = ReliefPack::whereIn('id', $packIds)->lockForUpdate()->get()->keyBy('id');
 
         $received = ReliefStock::whereIn('relief_pack_id', $packIds)
@@ -220,43 +257,9 @@ class DistributionStockService
             if ($want > $available) {
                 $name = $packs[$id]->name ?? "Pack #{$id}";
                 throw new InsufficientStockException(
-                    "Not enough stock for {$name}: requested {$want}, only {$available} available."
+                    "Not enough stock for {$name}: allocating {$want} in total, only {$available} available."
                 );
             }
         }
     }
-
-    private function lines(array $reliefList): array
-    {
-        return collect($reliefList)
-            ->map(fn (array $item) => [
-                'relief_pack_id' => $item['relief_pack_id'],
-                'quantity' => $item['quantity'],
-                'entitlement_per_beneficiary' => $item['entitlement_per_beneficiary'] ?? 1,
-            ])
-            ->all();
-    }
-
-public function setBeneficiaryAllocations(DistributionSchedule $schedule, array $allocations, int $assignedBy): void
-{
-    DB::transaction(function () use ($schedule, $allocations, $assignedBy) {
-        foreach ($allocations as $row) {
-            $schedule->allocations()->updateOrCreate(
-                [
-                    'beneficiary_id' => $row['beneficiary_id'],
-                    'relief_pack_id' => $row['relief_pack_id'],
-                ],
-                [
-                    'quantity' => $row['quantity'],
-                    'assigned_by' => $assignedBy,
-                ]
-            );
-        }
-    });
-}
-
-public function removeBeneficiaryAllocation(DistributionBeneficiaryAllocation $allocation): void
-{
-    $allocation->delete();
-}
 }

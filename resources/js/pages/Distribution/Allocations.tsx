@@ -36,6 +36,11 @@ interface Allocation {
     relief_pack_name: string;
     quantity: number;
 }
+interface ReliefPack {
+    id: number;
+    name: string;
+    available: number;
+}
 
 interface BeneficiaryResult {
     id: number;
@@ -207,7 +212,7 @@ export default function Allocations() {
                             <SelectContent>
                                 {reliefPacks.map((p) => (
                                     <SelectItem key={p.id} value={String(p.id)}>
-                                        {p.name} (default {p.default_entitlement})
+                                        {p.name} ({p.available} available)
                                     </SelectItem>
                                 ))}
                             </SelectContent>

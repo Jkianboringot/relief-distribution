@@ -55,47 +55,103 @@ class DistributionScheduleController extends Controller
         ]);
     }
 
-  public function create(): Response
+public function create(): Response
 {
     return Inertia::render('Distribution/Create', [
-        'reliefPacks' => ReliefPack::with(['reliefStock', 'distributionReliefStock'])
-            ->select('id', 'name')
-            ->get()
-            ->map(fn ($pack) => [
-                'id' => $pack->id,
-                'name' => $pack->name,
-                'current_stock' => $pack->current_stock,
-            ]),
         'barangays' => Barangay::select('id', 'name')->orderBy('name')->get(),
     ]);
 }
 
-    public function store(DistributionScheduleRequest $request): RedirectResponse
-    {
-        $data = $request->validated();
+public function store(DistributionScheduleRequest $request): RedirectResponse
+{
+    $data = $request->validated();
 
+    try {
+        $this->distribution_stock->distributionStore([
+            'title' => $data['title'],
+            'date' => $data['date'],
+            'location' => $data['location'] ?? null,
+            'barangay_id' => $data['barangay_id'],
+        ]);
+    } catch (\Throwable $th) {
+        Log::error($th);
+        return back()->withInput()->with('error', 'Failed to create distribution.');
+    }
+
+    return redirect()->route('distribution.index')->with('message', 'Distribution created.');
+}
+
+public function edit(DistributionSchedule $schedule): Response
+{
+    return Inertia::render('Distribution/Edit', [
+        'schedule' => [
+            'id' => $schedule->id,
+            'title' => $schedule->title,
+            'date' => $schedule->date?->format('Y-m-d'),
+            'location' => $schedule->location,
+            'barangay_id' => $schedule->barangay_id,
+        ],
+        'barangays' => Barangay::select('id', 'name')->orderBy('name')->get(),
+    ]);
+}
+
+public function update(DistributionScheduleRequest $request, DistributionSchedule $schedule): RedirectResponse
+{
+    $data = $request->validated();
+
+    try {
+        $this->distribution_stock->distributionUpdate($schedule, [
+            'title' => $data['title'],
+            'date' => $data['date'],
+            'location' => $data['location'] ?? null,
+            'barangay_id' => $data['barangay_id'],
+        ]);
+    } catch (\Throwable $th) {
+        Log::error($th);
+        return back()->with('error', 'Failed to update distribution.');
+    }
+
+    return redirect()->route('distribution.index')->with('message', 'Distribution updated.');
+}
+
+    public function destroy(DistributionSchedule $schedule): RedirectResponse
+    {
         try {
-            $this->distribution_stock->distributionStore([
-                'schedule' => [
-                    'title' => $data['title'],
-                    'date' => $data['date'],
-                    'location' => $data['location'] ?? null,
-                    'barangay_id' => $data['barangay_id'],
-                ],
-                'reliefList' => $data['reliefList'],
-            ]);
-        } catch (InsufficientStockException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
+            $this->distribution_stock->distributionDelete($schedule);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (\Throwable $th) {
             Log::error($th);
-            return back()->withInput()->with('error', 'Failed to create distribution.');
+            return back()->with('error', 'Failed to delete distribution.');
         }
 
         return redirect()
             ->route('distribution.index')
-            ->with('message', 'Distribution recorded.');
+            ->with('message', 'Distribution deleted.');
     }
 
+    public function updateStatus(Request $request, DistributionSchedule $schedule): RedirectResponse
+    {
+        $data = $request->validate([
+            'status' => 'required|in:ongoing,completed',
+        ]);
+
+        try {
+            $this->distribution_stock->distributionSetStatus($schedule, $data['status']);
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $th) {
+            Log::error($th);
+            return back()->with('error', 'Failed to update distribution status.');
+        }
+
+        return back()->with('message', $data['status'] === 'ongoing'
+            ? 'Distribution started. Claims are now open.'
+            : 'Distribution completed.');
+    }
+
+
+    
 public function show(DistributionSchedule $schedule): Response
 {
     $schedule->load([
@@ -143,93 +199,4 @@ public function show(DistributionSchedule $schedule): Response
     ]);
 }
 
-   public function edit(DistributionSchedule $schedule): Response
-{
-    $schedule->load('reliefStock.reliefPack:id,name');
-
-    return Inertia::render('Distribution/Edit', [
-        'schedule' => [
-            'id' => $schedule->id,
-            'title' => $schedule->title,
-            'date' => $schedule->date?->format('Y-m-d'),
-            'location' => $schedule->location,
-            'barangay_id' => $schedule->barangay_id,
-           'reliefList' => $schedule->reliefStock->map(fn($stock) => [
-    'relief_pack_id' => $stock->relief_pack_id,
-    'quantity' => (int) $stock->quantity,
-    'entitlement_per_beneficiary' => (int) $stock->entitlement_per_beneficiary,
-])->values(),
-        ],
-        'reliefPacks' => ReliefPack::with(['reliefStock', 'distributionReliefStock'])
-            ->select('id', 'name')
-            ->get()
-            ->map(fn ($pack) => [
-                'id' => $pack->id,
-                'name' => $pack->name,
-                'current_stock' => $pack->current_stock,
-            ]),
-        'barangays' => Barangay::select('id', 'name')->orderBy('name')->get(),
-    ]);
-}
-    public function update(DistributionScheduleRequest $request, DistributionSchedule $schedule): RedirectResponse
-    {
-        $data = $request->validated();
-
-        try {
-            $this->distribution_stock->distributionUpdate($schedule, [
-                'schedule' => [
-                    'title' => $data['title'],
-                    'date' => $data['date'],
-                    'location' => $data['location'] ?? null,
-                    'barangay_id' => $data['barangay_id'],
-                ],
-                'reliefList' => $data['reliefList'],
-            ]);
-        } catch (InsufficientStockException $e) {
-            return back()->with('error', $e->getMessage());
-        } catch (\Throwable $th) {
-            Log::error($th);
-            return back()->with('error', 'Failed to update distribution.');
-        }
-
-        return redirect()
-            ->route('distribution.index')
-            ->with('message', 'Distribution updated.');
-    }
-
-    public function destroy(DistributionSchedule $schedule): RedirectResponse
-    {
-        try {
-            $this->distribution_stock->distributionDelete($schedule);
-        } catch (\DomainException $e) {
-            return back()->with('error', $e->getMessage());
-        } catch (\Throwable $th) {
-            Log::error($th);
-            return back()->with('error', 'Failed to delete distribution.');
-        }
-
-        return redirect()
-            ->route('distribution.index')
-            ->with('message', 'Distribution deleted.');
-    }
-
-    public function updateStatus(Request $request, DistributionSchedule $schedule): RedirectResponse
-    {
-        $data = $request->validate([
-            'status' => 'required|in:ongoing,completed',
-        ]);
-
-        try {
-            $this->distribution_stock->distributionSetStatus($schedule, $data['status']);
-        } catch (\DomainException $e) {
-            return back()->with('error', $e->getMessage());
-        } catch (\Throwable $th) {
-            Log::error($th);
-            return back()->with('error', 'Failed to update distribution status.');
-        }
-
-        return back()->with('message', $data['status'] === 'ongoing'
-            ? 'Distribution started. Claims are now open.'
-            : 'Distribution completed.');
-    }
 }

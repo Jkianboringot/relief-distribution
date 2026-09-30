@@ -1,5 +1,6 @@
+// DistributionForm.tsx — full file
 import { useForm } from '@inertiajs/react';
-import { CircleAlert, Plus, Trash2 } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,21 +13,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-export type ReliefPack = {
-    id: number;
-    name: string;
-    current_stock: number;
-};
-
 export type Barangay = {
     id: number;
     name: string;
-};
-
-export type ReliefLine = {
-    relief_pack_id: string;
-    quantity: string;
-    entitlement_per_beneficiary: string;
 };
 
 export type DistributionFormData = {
@@ -34,11 +23,9 @@ export type DistributionFormData = {
     date: string;
     location: string;
     barangay_id: string;
-    reliefList: ReliefLine[];
 };
 
 type Props = {
-    reliefPacks: ReliefPack[];
     barangays: Barangay[];
     initial: DistributionFormData;
     method: 'post' | 'put';
@@ -46,73 +33,20 @@ type Props = {
     submitLabel: string;
 };
 
-export default function DistributionForm({
-    reliefPacks,
-    barangays,
-    initial,
-    method,
-    url,
-    submitLabel,
-}: Props) {
-    const { data, setData, post, put, processing, errors } =
-        useForm<DistributionFormData>(initial);
-
+export default function DistributionForm({ barangays, initial, method, url, submitLabel }: Props) {
+    const { data, setData, post, put, processing, errors } = useForm<DistributionFormData>(initial);
     const err = errors as Record<string, string | undefined>;
-
-    const originalQty = new Map<string, number>();
-    initial.reliefList.forEach((l) => {
-        if (l.relief_pack_id) {
-            originalQty.set(
-                l.relief_pack_id,
-                (originalQty.get(l.relief_pack_id) ?? 0) + (Number(l.quantity) || 0),
-            );
-        }
-    });
-
-    const availableFor = (packId: string): number | undefined => {
-        const pack = reliefPacks.find((p) => String(p.id) === packId);
-        if (!pack) return undefined;
-        return pack.current_stock + (originalQty.get(packId) ?? 0);
-    };
-
-    const chosenIds = data.reliefList.map((l) => l.relief_pack_id);
-
-    const setLine = (index: number, patch: Partial<ReliefLine>) =>
-        setData(
-            'reliefList',
-            data.reliefList.map((line, i) => (i === index ? { ...line, ...patch } : line)),
-        );
-
-    const addLine = () =>
-        setData('reliefList', [
-            ...data.reliefList,
-            { relief_pack_id: '', quantity: '', entitlement_per_beneficiary: '1' },
-        ]);
-
-    const removeLine = (index: number) =>
-        setData(
-            'reliefList',
-            data.reliefList.filter((_, i) => i !== index),
-        );
-
-    const totalBoxes = data.reliefList.reduce((sum, l) => sum + (Number(l.quantity) || 0), 0);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (method === 'post') {
-            post(url);
-        } else {
-            put(url);
-        }
+        if (method === 'post') post(url);
+        else put(url);
     };
 
     const errorMessages = Object.values(errors).filter(Boolean) as string[];
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            className="space-y-4 rounded-xl border border-[#d1d5db] bg-white p-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-[#d1d5db] bg-white p-5">
             {errorMessages.length > 0 && (
                 <Alert variant="destructive">
                     <CircleAlert />
@@ -128,9 +62,7 @@ export default function DistributionForm({
             )}
 
             <div className="space-y-1">
-                <Label htmlFor="title" className="font-semibold text-ink">
-                    Title
-                </Label>
+                <Label htmlFor="title" className="font-semibold text-ink">Title</Label>
                 <Input
                     id="title"
                     type="text"
@@ -144,9 +76,7 @@ export default function DistributionForm({
 
             <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                    <Label htmlFor="date" className="font-semibold text-ink">
-                        Date
-                    </Label>
+                    <Label htmlFor="date" className="font-semibold text-ink">Date</Label>
                     <Input
                         id="date"
                         type="date"
@@ -158,9 +88,7 @@ export default function DistributionForm({
                 </div>
 
                 <div className="space-y-1">
-                    <Label htmlFor="location" className="font-semibold text-ink">
-                        Location
-                    </Label>
+                    <Label htmlFor="location" className="font-semibold text-ink">Location</Label>
                     <Input
                         id="location"
                         type="text"
@@ -174,144 +102,28 @@ export default function DistributionForm({
             </div>
 
             <div className="space-y-1">
-                <Label htmlFor="barangay_id" className="font-semibold text-ink">
-                    Barangay
-                </Label>
-                <Select
-                    value={data.barangay_id || undefined}
-                    onValueChange={(value) => setData('barangay_id', value)}
-                >
+                <Label htmlFor="barangay_id" className="font-semibold text-ink">Barangay</Label>
+                <Select value={data.barangay_id || undefined} onValueChange={(value) => setData('barangay_id', value)}>
                     <SelectTrigger id="barangay_id" className="w-full border-[#e0d0c0] bg-white">
                         <SelectValue placeholder="Select barangay…" />
                     </SelectTrigger>
                     <SelectContent>
                         {barangays.map((b) => (
-                            <SelectItem key={b.id} value={String(b.id)}>
-                                {b.name}
-                            </SelectItem>
+                            <SelectItem key={b.id} value={String(b.id)}>{b.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
-                {err.barangay_id && (
-                    <p className="mt-1.5 text-sm text-danger">{err.barangay_id}</p>
-                )}
+                {err.barangay_id && <p className="mt-1.5 text-sm text-danger">{err.barangay_id}</p>}
             </div>
 
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <Label className="font-semibold text-ink">Relief Packs</Label>
-                    <span className="text-xs text-subtle">Total: {totalBoxes} boxes</span>
-                </div>
-
-                {data.reliefList.map((line, index) => {
-                    const available = availableFor(line.relief_pack_id);
-
-                    return (
-                        <div key={index} className="space-y-1 rounded-lg border border-[#e5e7eb] p-3">
-                            <div className="grid grid-cols-[1fr_7rem_7rem_auto] items-start gap-3">
-                                <div>
-                                    <Select
-                                        value={line.relief_pack_id || undefined}
-                                        onValueChange={(value) =>
-                                            setLine(index, { relief_pack_id: value })
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full bg-white">
-                                            <SelectValue placeholder="Select box type…" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {reliefPacks
-                                                .filter(
-                                                    (p) =>
-                                                        String(p.id) === line.relief_pack_id ||
-                                                        !chosenIds.includes(String(p.id)),
-                                                )
-                                                .map((pack) => (
-                                                    <SelectItem key={pack.id} value={String(pack.id)}>
-                                                        {pack.name} (
-                                                        {pack.current_stock +
-                                                            (originalQty.get(String(pack.id)) ?? 0)}{' '}
-                                                        in stock)
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <Input
-                                        type="number"
-                                        min={1}
-                                        max={available}
-                                        placeholder="Qty brought"
-                                        value={line.quantity}
-                                        onChange={(e) => setLine(index, { quantity: e.target.value })}
-                                        className="border-[#e0d0c0]"
-                                    />
-                                    <p className="mt-0.5 text-[11px] text-subtle">Total qty</p>
-                                </div>
-
-                                <div>
-                                    <Input
-                                        type="number"
-                                        min={1}
-                                        placeholder="Per family"
-                                        value={line.entitlement_per_beneficiary}
-                                        onChange={(e) =>
-                                            setLine(index, { entitlement_per_beneficiary: e.target.value })
-                                        }
-                                        className="border-[#e0d0c0]"
-                                    />
-                                    <p className="mt-0.5 text-[11px] text-subtle">Per family head</p>
-                                </div>
-
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => removeLine(index)}
-                                    disabled={data.reliefList.length === 1}
-                                    aria-label="Remove line"
-                                >
-                                    <Trash2 className="size-4" />
-                                </Button>
-                            </div>
-
-                            {available !== undefined && (
-                                <p className="text-xs text-subtle">{available} boxes available.</p>
-                            )}
-                            {err[`reliefList.${index}.relief_pack_id`] && (
-                                <p className="text-sm text-danger">
-                                    {err[`reliefList.${index}.relief_pack_id`]}
-                                </p>
-                            )}
-                            {err[`reliefList.${index}.quantity`] && (
-                                <p className="text-sm text-danger">
-                                    {err[`reliefList.${index}.quantity`]}
-                                </p>
-                            )}
-                            {err[`reliefList.${index}.entitlement_per_beneficiary`] && (
-                                <p className="text-sm text-danger">
-                                    {err[`reliefList.${index}.entitlement_per_beneficiary`]}
-                                </p>
-                            )}
-                        </div>
-                    );
-                })}
-
-                {err.reliefList && <p className="text-sm text-danger">{err.reliefList}</p>}
-
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addLine}
-                    disabled={data.reliefList.length >= reliefPacks.length}
-                >
-                    <Plus className="mr-1 size-4" />
-                    Add another pack
-                </Button>
-            </div>
+            <Alert>
+                <CircleAlert />
+                <AlertTitle>No pack quantities here</AlertTitle>
+                <AlertDescription>
+                    Relief packs and quantities are set on the Allocations page, per beneficiary, after
+                    creating this schedule.
+                </AlertDescription>
+            </Alert>
 
             <div className="flex justify-end border-t border-[#d1d5db] pt-3">
                 <Button

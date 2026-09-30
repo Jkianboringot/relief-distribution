@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Benificiary;
 use App\Models\DistributionBeneficiaryAllocation;
 use App\Models\DistributionSchedule;
+use App\Models\ReliefPack;
 use App\Services\DistributionStockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -18,37 +19,44 @@ class AllocationController extends Controller
     {
     }
 
-    public function edit(DistributionSchedule $schedule): Response
-    {
-        $schedule->load([
-            'barangay:id,name',
-            'reliefStock.reliefPack:id,name',
-            'allocations.beneficiary:id,first_name,middle_name,last_name,household_members',
-            'allocations.reliefPack:id,name',
-        ]);
+  public function edit(DistributionSchedule $schedule): Response
+{
+    $schedule->load([
+        'barangay:id,name',
+        'reliefStock', // this schedule's own current committed totals, per pack
+        'allocations.beneficiary:id,first_name,middle_name,last_name,household_members',
+        'allocations.reliefPack:id,name',
+    ]);
 
-        return Inertia::render('Distribution/Allocations', [
-            'schedule' => [
-                'id' => $schedule->id,
-                'title' => $schedule->title,
-                'barangay' => $schedule->barangay?->name,
-            ],
-            'reliefPacks' => $schedule->reliefStock->map(fn ($stock) => [
-                'id' => $stock->relief_pack_id,
-                'name' => $stock->reliefPack?->name ?? 'Unknown pack',
-                'default_entitlement' => (int) $stock->entitlement_per_beneficiary,
-            ])->values(),
-            'allocations' => $schedule->allocations->map(fn ($a) => [
-                'id' => $a->id,
-                'beneficiary_id' => $a->beneficiary_id,
-                'beneficiary_name' => $a->beneficiary?->full_name ?? 'Unknown',
-                'household_members' => $a->beneficiary?->household_members,
-                'relief_pack_id' => $a->relief_pack_id,
-                'relief_pack_name' => $a->reliefPack?->name ?? 'Unknown pack',
-                'quantity' => (int) $a->quantity,
-            ])->values(),
-        ]);
-    }
+    $ownCommitted = $schedule->reliefStock->pluck('quantity', 'relief_pack_id');
+
+    return Inertia::render('Distribution/Allocations', [
+        'schedule' => [
+            'id' => $schedule->id,
+            'title' => $schedule->title,
+            'barangay' => $schedule->barangay?->name,
+        ],
+        'reliefPacks' => ReliefPack::with(['reliefStock', 'distributionReliefStock'])
+            ->select('id', 'name')
+            ->get()
+            ->map(fn ($pack) => [
+                'id' => $pack->id,
+                'name' => $pack->name,
+                // Global remaining + whatever THIS schedule already has committed
+                // (that portion isn't "used up" from this schedule's own perspective).
+                'available' => $pack->current_stock + (int) ($ownCommitted[$pack->id] ?? 0),
+            ]),
+        'allocations' => $schedule->allocations->map(fn ($a) => [
+            'id' => $a->id,
+            'beneficiary_id' => $a->beneficiary_id,
+            'beneficiary_name' => $a->beneficiary?->full_name ?? 'Unknown',
+            'household_members' => $a->beneficiary?->household_members,
+            'relief_pack_id' => $a->relief_pack_id,
+            'relief_pack_name' => $a->reliefPack?->name ?? 'Unknown pack',
+            'quantity' => (int) $a->quantity,
+        ])->values(),
+    ]);
+}
 
     public function search(Request $request, DistributionSchedule $schedule): JsonResponse
     {
@@ -61,7 +69,7 @@ class AllocationController extends Controller
         $beneficiaries = Benificiary::query()
             ->where('barangay_id', $schedule->barangay_id)
             ->where(function ($query) use ($q) {
-                $query->where('first_name', 'like', "{$q}%")
+                $query->where('first_name', 'like', "%{$q}%")
                     ->orWhere('last_name', 'like', "{$q}%");
             })
             ->limit(10)
