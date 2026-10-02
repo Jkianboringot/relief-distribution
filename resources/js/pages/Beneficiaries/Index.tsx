@@ -22,6 +22,7 @@ import {
 import { ChevronLeft, ChevronRight, Pencil, QrCode, Search, Trash2, X } from 'lucide-react';
 import { deleteMethod, index as beneficiariesIndex, edit, index } from '@/routes/beneficiaries';
 import FlashAlerts from '@/components/flash-alerts';
+import { useCan } from '@/hooks/use-can';
 
 interface barangay {
     id: number;
@@ -82,6 +83,7 @@ function paginationLabel(label: string) {
 }
 
 export default function Index() {
+    const can = useCan();
     const { flash, beneficiaries, barangays, filters } =
         usePage<PageProps & Record<string, unknown>>().props as unknown as PageProps;
     const { processing, delete: destroyForm } = useForm();
@@ -173,11 +175,13 @@ export default function Index() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
                         Beneficiaries
                     </h1>
-                    <Link href={'/beneficiaries/create'}>
-                        <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New Benificiary
-                        </Button>
-                    </Link>
+                    {can('beneficiaries.create') && (
+                        <Link href={'/beneficiaries/create'}>
+                            <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
+                                New Benificiary
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
@@ -243,7 +247,6 @@ export default function Index() {
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Barangay</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Gender</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Household</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Status</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -266,9 +269,7 @@ export default function Index() {
                                     <TableCell className="text-ink">{Benificiary.barangay.name}</TableCell>
                                     <TableCell className="capitalize text-ink">{Benificiary.gender}</TableCell>
                                     <TableCell className="text-ink">{Benificiary.household_members}</TableCell>
-                                    <TableCell>
-                                        <StatusBadge status={Benificiary.status} />
-                                    </TableCell>
+                                    
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <button
@@ -280,27 +281,31 @@ export default function Index() {
                                                 <QrCode className="h-4 w-4" />
                                                 QR
                                             </button>
-                                            <Link
-                                                href={edit(Benificiary.id).url}
-                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                                Edit
-                                            </Link>
-                                            <button
-                                                type="button"
-                                                disabled={processing}
-                                                onClick={() =>
-                                                    handleDelete(
-                                                        Benificiary.id,
-                                                        [Benificiary.first_name, Benificiary.last_name].join(' '),
-                                                    )
-                                                }
-                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                Delete
-                                            </button>
+                                            {can('beneficiaries.update') && (
+                                                <Link
+                                                    href={edit(Benificiary.id).url}
+                                                    className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                    Edit
+                                                </Link>
+                                            )}
+                                            {can('beneficiaries.delete') && (
+                                                <button
+                                                    type="button"
+                                                    disabled={processing}
+                                                    onClick={() =>
+                                                        handleDelete(
+                                                            Benificiary.id,
+                                                            [Benificiary.first_name, Benificiary.last_name].join(' '),
+                                                        )
+                                                    }
+                                                    className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger disabled:opacity-50"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    Delete
+                                                </button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

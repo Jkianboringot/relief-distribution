@@ -1,7 +1,5 @@
 <?php
 
-use App\Enums\barangayType;
-use Filament\Livewire\Sidebar;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barangays', function (Blueprint $table) {
+        Schema::create('municipalities', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('municipality_id')->constrained();
-            $table->string('code',75)->unique();
-            $table->string('name',75)->unique(); 
-            
+            $table->string('name');
             $table->timestamps();
-
         });
     }
 
@@ -29,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('barangays');
+        Schema::dropIfExists('municipalities');
     }
 };

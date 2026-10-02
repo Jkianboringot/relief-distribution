@@ -13,14 +13,19 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useCan } from '@/hooks/use-can';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+// `permission` = the permission the user needs to see this link
+type PermissionNavItem = NavItem & { permission: string };
+
+const mainNavItems: PermissionNavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        permission: 'analytics.dashboard',
     },
 
 
@@ -28,11 +33,13 @@ const mainNavItems: NavItem[] = [
         title: 'Barangay',
         href: '/barangays',
         icon: Building2,
+        permission: 'barangays.view',
     },
     {
         title: 'Beneficiaries',
         href: '/beneficiaries',
         icon: FolderGit2,
+        permission: 'beneficiaries.view',
     },
 
 
@@ -40,26 +47,31 @@ const mainNavItems: NavItem[] = [
         title: 'Distribution',
         href: '/distribution',
         icon: University,
+        permission: 'distributions.view',
     },
     {
         title: 'Relief',
         href: '/relief-packs',
         icon: Package,
+        permission: 'inventory.view',
     },
     {
         title: 'Users',
         href: '/users',
         icon: User,
+        permission: 'users.route',
     },
     {
         title: 'Pack Receipt',
         href: '/pack-receipts',
         icon: PackagePlus ,
+        permission: 'inventory.view',
     },
     {
         title: 'Report',
         href: '/reports',
         icon: ClipboardMinus ,
+        permission: 'reports.view',
     },
 
 
@@ -78,6 +90,9 @@ const mainNavItems: NavItem[] = [
 // ];
 
 export function AppSidebar() {
+    const can = useCan();
+    const visibleNavItems = mainNavItems.filter((item) => can(item.permission));
+
     return (
         <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
@@ -93,7 +108,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={visibleNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

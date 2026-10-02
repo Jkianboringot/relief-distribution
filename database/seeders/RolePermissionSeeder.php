@@ -6,11 +6,15 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Clear Spatie's cache so re-running the seeder always takes effect.
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
         /*
         |--------------------------------------------------------------------------
         | Permissions
@@ -20,19 +24,24 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             // Users
             'users.route',
-
             'users.view',
             'users.create',
             'users.update',
             'users.delete',
 
-            // beneficiaries
+            // Barangays
+            'barangays.view',
+            'barangays.create',
+            'barangays.update',
+            'barangays.delete',
+
+            // Beneficiaries
             'beneficiaries.view',
             'beneficiaries.create',
             'beneficiaries.update',
             'beneficiaries.delete',
 
-            // Inventory
+            // Inventory (relief packs + pack receipts)
             'inventory.view',
             'inventory.create',
             'inventory.update',
@@ -43,23 +52,22 @@ class RolePermissionSeeder extends Seeder
             'distributions.create',
             'distributions.update',
             'distributions.delete',
+            'distributions.status',   // change schedule status (BRGY can, but only to "ongoing" -> controller)
 
-            // Follow-ups
-          
+            // Reports / dashboard
+            'reports.view',       // view reports (BRGY: own barangay only -> controller)
+            'reports.download',   // export CSV / print (ADMIN only)
+            'analytics.dashboard',
 
-            // Treatment Details
-      
+            // Scan / claim
+            'verify.Benificiary',
+            'approval.stockverifcation',
 
-            // Patient-specific
+            // Not assigned to any role yet
             'profile.view',
             'profile.update',
             'profile.qr_download',
             'distributions.view_own',
-            'reports.download',
-            'analytics.dashboard',
-            'verify.Benificiary',
-            'approval.stockverifcation'
-
         ];
 
         foreach ($permissions as $permission) {
@@ -85,56 +93,63 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
-
-
-
-      
-
+        // BRGY: view/create schedules, change schedule status (ongoing only), view
+        //       beneficiaries + QR, scan/verify + claim, limited dashboard, view reports.
+        // CANNOT: users, barangays, inventory, edit/delete schedules, allocations,
+        //         delete transactions, export reports.
+        // (Own-barangay filtering must be done in the controllers.)
         $barangayofficial->syncPermissions([
             'distributions.view',
             'distributions.create',
-            'distributions.update',
-            'distributions.delete',
-            'reports.download',
+            'distributions.status',
+            'beneficiaries.view',
+            'analytics.dashboard',
+            'reports.view',
             'verify.Benificiary',
-            'approval.stockverifcation'
-
-        
+            'approval.stockverifcation',
         ]);
 
-        //this guys is an acting admin
+        // this guys is an acting admin
         $lgustaff->syncPermissions([
-              'users.route',
+            'users.route',
             'users.view',
             'users.create',
             'users.update',
             'users.delete',
 
-
-            'distributions.view',
-            'distributions.create',
-            'distributions.update',
-            'distributions.delete',
-
-             'inventory.view',
-            'inventory.create',
-            'inventory.update',
-            'inventory.delete',
+            'barangays.view',
+            'barangays.create',
+            'barangays.update',
+            'barangays.delete',
 
             'beneficiaries.view',
             'beneficiaries.create',
             'beneficiaries.update',
             'beneficiaries.delete',
 
+            'inventory.view',
+            'inventory.create',
+            'inventory.update',
+            'inventory.delete',
+
+            'distributions.view',
+            'distributions.create',
+            'distributions.update',
+            'distributions.delete',
+            'distributions.status',
+
+            'reports.view',
             'reports.download',
-            'analytics.dashboard'
-        
+            'analytics.dashboard',
+
+            'verify.Benificiary',
+            'approval.stockverifcation',
         ]);
 
-    
+        // user 1 = LGU/MSWDO admin
+        User::find(1)?->assignRole($lgustaff);
 
-        $user=User::find(1);
-
-        $user->assignRole($lgustaff);
+        // user 2 = barangay official
+        User::find(2)?->assignRole($barangayofficial);
     }
 }

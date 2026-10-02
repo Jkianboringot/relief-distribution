@@ -151,9 +151,10 @@ export default function Index() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db] hover:bg-[#d1d5db]">
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Relief Packs</TableHead>
+
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Source Name</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Date Received</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Relief Packs</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Total Quantity</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>

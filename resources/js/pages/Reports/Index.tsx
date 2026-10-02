@@ -10,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useCan } from '@/hooks/use-can';
 
 interface Column {
     key: string;
@@ -49,6 +50,7 @@ function buildQuery(type: string, f: Filters) {
 }
 
 export default function Index() {
+    const can = useCan();
     const props = usePage<PageProps & Record<string, unknown>>()
         .props as unknown as PageProps;
     const { types, type, columns, rows, summary, barangays, schedules, generatedAt } = props;
@@ -72,6 +74,9 @@ export default function Index() {
     const typeLabel = types.find((t) => t.value === type)?.label ?? 'Report';
     const barangayName = barangays.find((b) => b.id === props.filters.barangay_id)?.name;
 
+    // BRGY cannot see the inventory report
+    const visibleTypes = types.filter((t) => t.value !== 'inventory' || can('inventory.view'));
+
     const formatCell = (value: string | number | undefined) =>
         typeof value === 'number' ? value.toLocaleString() : (value ?? '—');
 
@@ -91,26 +96,30 @@ export default function Index() {
             <div className="p-6">
                 <div className="mb-6 flex items-center justify-between print:hidden">
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">Reports</h1>
-                    <div className="flex items-center gap-3">
-                        <a href={`/reports/export?${buildQuery(type, props.filters)}`}>
-                            <Button variant="outline" className="gap-2">
-                                <Download className="h-4 w-4" />
-                                Export CSV (Excel)
+
+                    {/* Export + Print: ADMIN only */}
+                    {can('reports.download') && (
+                        <div className="flex items-center gap-3">
+                            <a href={`/reports/export?${buildQuery(type, props.filters)}`}>
+                                <Button variant="outline" className="gap-2">
+                                    <Download className="h-4 w-4" />
+                                    Export CSV (Excel)
+                                </Button>
+                            </a>
+                            <Button
+                                onClick={() => window.print()}
+                                className="gap-2 bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
+                            >
+                                <Printer className="h-4 w-4" />
+                                Print / Save as PDF
                             </Button>
-                        </a>
-                        <Button
-                            onClick={() => window.print()}
-                            className="gap-2 bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
-                        >
-                            <Printer className="h-4 w-4" />
-                            Print / Save as PDF
-                        </Button>
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* report type tabs */}
                 <div className="mb-4 flex flex-wrap gap-2 print:hidden">
-                    {types.map((t) => (
+                    {visibleTypes.map((t) => (
                         <button
                             key={t.value}
                             type="button"

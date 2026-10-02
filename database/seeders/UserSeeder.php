@@ -15,13 +15,22 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         //  User::factory()->insert([
-         User::insert([
-            'name' => 'Admin User',
-            'email' => 'admin@gmail.com',
-            'password' => Hash
-            ::make('123'),
-            'barangay_id'=>1
-            
+        User::insert([
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@gmail.com',
+                'password' => Hash
+                    ::make('123'),
+                'barangay_id' => 1
+            ],
+            [
+                'name' => 'Barangay Official',
+                'email' => 'brgy@gmail.com',
+                'password' => Hash
+                    ::make('123'),
+                'barangay_id' => 1
+            ]
+
         ]);
-    }   
+    }
 }

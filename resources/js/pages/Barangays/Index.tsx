@@ -137,12 +137,14 @@ export default function Index() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    Code
+                                  <TableHead className="font-bold tracking-wide text-brand-orange-hover">
+                                    BRGY Name
                                 </TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    Name
+                                   <TableHead className="font-bold tracking-wide text-brand-orange-hover">
+                                    municipality
                                 </TableHead>
+                               
+                              
 
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>

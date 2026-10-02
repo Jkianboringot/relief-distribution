@@ -37,16 +37,21 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            // All permission names of the logged-in user (from their role + any direct ones).
+            // Used in the frontend to hide menus/buttons the role should not see.
+            'permissions' => fn() => $request->user()
+                ? $request->user()->getAllPermissions()->pluck('name')->values()->all()
+                : [],
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
             ],
-            'flash'=>[
-                'message'=>fn()=>$request->session()->get('message'),
-                'success'=>fn()=>$request->session()->get('success'),
-                'error'=>fn()=>$request->session()->get('error')
+            'flash' => [
+                'message' => fn() => $request->session()->get('message'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error')
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
 }

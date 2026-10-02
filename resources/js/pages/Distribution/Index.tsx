@@ -10,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useCan } from '@/hooks/use-can';
 import { destroy, edit, show } from '@/routes/distribution';
 
 interface ScheduleItem {
@@ -65,6 +66,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function Index() {
+    const can = useCan();
     const { flash, schedules = [] } = usePage<PageProps & Record<string, unknown>>()
         .props as unknown as PageProps;
 
@@ -87,11 +89,13 @@ export default function Index() {
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
                         Distribution Schedules
                     </h1>
-                    <Link href="/distribution/create">
-                        <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New Schedule
-                        </Button>
-                    </Link>
+                    {can('distributions.create') && (
+                        <Link href="/distribution/create">
+                            <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
+                                New Schedule
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
@@ -99,11 +103,12 @@ export default function Index() {
                         <TableHeader>
                             <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db] hover:bg-[#d1d5db]">
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Title</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Date</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Barangay</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Box Type</TableHead>
-                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Claimed / Planned</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Status</TableHead>
+
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Date</TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">Claimed / Planned</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -155,21 +160,25 @@ export default function Index() {
                                             >
                                                 View / Claim
                                             </Link>
-                                            <Link
-                                                href={edit(schedule.id).url}
-                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                                Edit
-                                            </Link>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(schedule)}
-                                                className="flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700"
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                                Delete
-                                            </button>
+                                            {can('distributions.update') && (
+                                                <Link
+                                                    href={edit(schedule.id).url}
+                                                    className="flex items-center gap-1 text-sm font-medium text-ink hover:text-brand-orange"
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                    Edit
+                                                </Link>
+                                            )}
+                                            {can('distributions.delete') && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(schedule)}
+                                                    className="flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                    Delete
+                                                </button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>
