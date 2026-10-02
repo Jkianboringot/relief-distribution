@@ -144,7 +144,7 @@ export default function Allocations() {
 
     function deleteSaved(allocationId: number, name: string, packName: string) {
         if (confirm(`Remove the ${packName} override for ${name}? They'll fall back to the default amount.`)) {
-            router.delete(`/allocations/${allocationId}`, { preserveScroll: true });
+            router.delete(`/distribution/allocations/${allocationId}`, { preserveScroll: true });
         }
     }
 
@@ -334,15 +334,7 @@ export default function Allocations() {
                     </Table>
                 </div>
 
-                <Alert className="mt-6">
-                    <CircleAlert />
-                    <AlertTitle>How this works</AlertTitle>
-                    <AlertDescription>
-                        A saved override only changes the amount for that one family head, for that one pack,
-                        on this schedule. Every other pack, and every other family head, still uses the
-                        schedule's normal amount automatically.
-                    </AlertDescription>
-                </Alert>
+               
             </div>
         </>
     );

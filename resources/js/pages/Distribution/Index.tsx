@@ -131,7 +131,6 @@ export default function Index() {
                                             {schedule.title}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-ink">{formatDate(schedule.date)}</TableCell>
                                     <TableCell className="text-ink">{schedule.barangay}</TableCell>
                                     <TableCell className="text-ink">
                                         {(schedule.items ?? []).length === 0 ? (
@@ -146,11 +145,12 @@ export default function Index() {
                                             </ul>
                                         )}
                                     </TableCell>
-                                    <TableCell className="text-ink">
-                                        {schedule.claimed_count} / {schedule.total_quantity}
-                                    </TableCell>
                                     <TableCell>
                                         <StatusBadge status={schedule.status} />
+                                    </TableCell>
+                                    <TableCell className="text-ink">{formatDate(schedule.date)}</TableCell>
+                                    <TableCell className="text-ink">
+                                        {schedule.claimed_count} / {schedule.total_quantity}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">

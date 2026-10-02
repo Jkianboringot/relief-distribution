@@ -179,12 +179,6 @@ export default function Index() {
                                         key={receipt.id}
                                         className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
                                     >
-                                        <TableCell className="align-top font-medium text-[#7a3b12]">
-                                            {receipt.source_name}
-                                        </TableCell>
-                                        <TableCell className="align-top text-ink">
-                                            {formatDate(receipt.date_received)}
-                                        </TableCell>
                                         <TableCell className="align-top text-ink">
                                             {receipt.items.length === 0 ? (
                                                 <span className="text-sm text-subtle">No items</span>
@@ -211,6 +205,12 @@ export default function Index() {
                                                     )}
                                                 </ul>
                                             )}
+                                        </TableCell>
+                                        <TableCell className="align-top font-medium text-[#7a3b12]">
+                                            {receipt.source_name}
+                                        </TableCell>
+                                        <TableCell className="align-top text-ink">
+                                            {formatDate(receipt.date_received)}
                                         </TableCell>
                                         <TableCell className="align-top font-semibold text-ink">
                                             {receipt.total_quantity}

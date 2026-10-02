@@ -10,7 +10,7 @@
 |   barangayofficial (BRGY)            -> distributions.view, distributions.create,
 |                                         distributions.status, beneficiaries.view,
 |                                         analytics.dashboard, reports.view,
-|                                         verify.Benificiary, approval.stockverifcation
+|                                         verify.Benificiary, approval.claim
 |
 | BRGY cannot: users, barangays, inventory (relief packs / pack receipts),
 |              edit/delete schedules, allocations, delete transactions, export reports.
@@ -52,7 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('scan.live');
     Route::middleware('can:verify.Benificiary')->get('/scan/{qr_code}', [ScanController::class, 'show'])
         ->name('scan.show');
-    Route::middleware('can:approval.stockverifcation')->post('/scan/{qr_code}/confirm', [ScanController::class, 'confirm'])
+    Route::middleware('can:approval.claim')->post('/scan/{qr_code}/confirm', [ScanController::class, 'confirm'])
         ->name('scan.confirm');
 
     // BARANGAYS - ADMIN only
@@ -196,7 +196,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('destroy');
 
         // claim (approve release) - ADMIN + BRGY
-        Route::middleware('can:approval.stockverifcation')->post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])
+        Route::middleware('can:approval.claim')->post('/{schedule}/claim', [DistributionTransactionController::class, 'store'])
             ->name('claim');
 
         // change schedule status - ADMIN + BRGY
@@ -206,19 +206,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Relief allocation - ADMIN only (treated as part of editing schedules)
         Route::prefix('{schedule}/allocations')->name('allocations.')->group(function () {
-            Route::middleware('can:distributions.update')->get('/', [AllocationController::class, 'edit'])
+            Route::middleware('can:verify.allocation')->get('/', [AllocationController::class, 'edit'])
                 ->name('edit');
-            Route::middleware('can:distributions.update')->get('/search', [AllocationController::class, 'search'])
+            Route::middleware('can:verify.allocation')->get('/search', [AllocationController::class, 'search'])
                 ->name('search');
-            Route::middleware('can:distributions.update')->post('/', [AllocationController::class, 'store'])
+            Route::middleware('can:verify.allocation')->post('/', [AllocationController::class, 'store'])
                 ->name('store');
         });
 
-        Route::middleware('can:distributions.update')->delete('/allocations/{allocation}', [AllocationController::class, 'destroy'])
+        Route::middleware('can:verify.allocation')->delete('/allocations/{allocation}', [AllocationController::class, 'destroy'])
             ->name('allocations.destroy');
     });
 
-    // DISTRIBUTION TRANSACTIONS - ADMIN only (correct/void a record, keeps audit trail safe)
+    // // DISTRIBUTION TRANSACTIONS - ADMIN only (correct/void a record, keeps audit trail safe)
     Route::prefix('distribution-transactions')->name('distribution-transactions.')->group(
         function () {
             Route::middleware('can:distributions.delete')->delete('/{transaction}', [DistributionTransactionController::class, 'destroy'])

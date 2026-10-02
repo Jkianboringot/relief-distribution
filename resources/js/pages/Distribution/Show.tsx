@@ -360,13 +360,12 @@ export default function Show() {
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Family Size</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Verified By</TableHead>
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">Time</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {transactions.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-10 text-center text-sm text-subtle">
+                                    <TableCell colSpan={5} className="py-10 text-center text-sm text-subtle">
                                         No boxes released yet for this schedule.
                                     </TableCell>
                                 </TableRow>
@@ -386,23 +385,6 @@ export default function Show() {
                                         {tx.verification_timestamp
                                             ? new Date(tx.verification_timestamp).toLocaleString()
                                             : '—'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    handleReverse(
-                                                        tx.id,
-                                                        tx.beneficiary?.family_head_name ?? 'this beneficiary',
-                                                    )
-                                                }
-                                                className="flex items-center gap-1 text-sm font-medium text-ink hover:text-danger"
-                                            >
-                                                <Undo2 className="h-4 w-4" />
-                                                Reverse
-                                            </button>
-                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

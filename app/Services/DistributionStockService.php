@@ -10,7 +10,7 @@ use App\Models\ReliefPack;
 use App\Models\ReliefStock;
 use Illuminate\Support\Facades\DB;
 
-/**
+/**aaa
  * OUT side of the ledger:
  *   distribution_schedules (header) -> distribution_relief_stocks (one row per pack line)
  * Stock per pack = SUM(relief_stocks) - SUM(distribution_relief_stocks).
@@ -85,6 +85,7 @@ class DistributionStockService
             if ($schedule->transactions()->exists()) {
                 throw new \DomainException('Cannot delete a schedule that already has beneficiary transactions.');
             }
+            $schedule->allocations()->delete();
 
             $schedule->reliefStock()->delete();
             $schedule->delete();

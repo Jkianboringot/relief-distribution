@@ -61,13 +61,15 @@ class RolePermissionSeeder extends Seeder
 
             // Scan / claim
             'verify.Benificiary',
-            'approval.stockverifcation',
+            'approval.claim',
 
             // Not assigned to any role yet
             'profile.view',
             'profile.update',
             'profile.qr_download',
             'distributions.view_own',
+
+            'verify.allocation'
         ];
 
         foreach ($permissions as $permission) {
@@ -100,13 +102,12 @@ class RolePermissionSeeder extends Seeder
         // (Own-barangay filtering must be done in the controllers.)
         $barangayofficial->syncPermissions([
             'distributions.view',
-            'distributions.create',
             'distributions.status',
             'beneficiaries.view',
             'analytics.dashboard',
             'reports.view',
             'verify.Benificiary',
-            'approval.stockverifcation',
+            'approval.claim',
         ]);
 
         // this guys is an acting admin
@@ -142,8 +143,10 @@ class RolePermissionSeeder extends Seeder
             'reports.download',
             'analytics.dashboard',
 
+            'verify.allocation',
             'verify.Benificiary',
-            'approval.stockverifcation',
+
+
         ]);
 
         // user 1 = LGU/MSWDO admin

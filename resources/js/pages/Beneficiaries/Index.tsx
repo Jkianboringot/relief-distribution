@@ -129,21 +129,110 @@ export default function Index() {
 
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
             const pageW = doc.internal.pageSize.getWidth();
-            const size = 100;
 
+            // Palette: black + shades of blue.
+            const black: [number, number, number] = [15, 23, 42];
+            const blue: [number, number, number] = [37, 99, 235];
+            const navy: [number, number, number] = [30, 58, 138];
+            const skyBlue: [number, number, number] = [147, 197, 253];
+            const paleBlue: [number, number, number] = [219, 234, 254];
+            const slate: [number, number, number] = [71, 85, 105];
+            const border: [number, number, number] = [191, 219, 254];
+
+            // Layout.
+            const cardW = 140;
+            const cardX = (pageW - cardW) / 2;
+            const cardY = 25;
+            const headerH = 32;
+            const qrSize = 80;
+            const framePad = 5;
+            const frameSize = qrSize + framePad * 2;
+            const nameLineH = 8.5;
+
+            // Wrap long names so they never run off the card.
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(20);
-            doc.text(fullName(b), pageW / 2, 30, { align: 'center' });
+            const nameLines = doc.splitTextToSize(fullName(b), cardW - 20) as string[];
 
+            const nameY = cardY + headerH + 16;
+            const barangayY = nameY + (nameLines.length - 1) * nameLineH + 9;
+            const frameY = barangayY + 10;
+            const captionY = frameY + frameSize + 9;
+            const dividerY = captionY + 8;
+            const pillY = dividerY + 7;
+            const footerY = pillY + 9 + 10;
+            const cardH = footerY + 8 - cardY;
+
+            // Card body.
+            doc.setDrawColor(...border);
+            doc.setLineWidth(0.4);
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(cardX, cardY, cardW, cardH, 6, 6, 'FD');
+
+            // Black header band (square off the bottom corners) with a blue stripe.
+            doc.setFillColor(...black);
+            doc.roundedRect(cardX, cardY, cardW, headerH, 6, 6, 'F');
+            doc.rect(cardX, cardY + headerH - 8, cardW, 8, 'F');
+            doc.setFillColor(...blue);
+            doc.rect(cardX, cardY + headerH, cardW, 2.5, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.text('CLAIM PASS', pageW / 2, cardY + 15, { align: 'center' });
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(...skyBlue);
+            doc.text('Relief Goods Distribution', pageW / 2, cardY + 23, { align: 'center' });
+
+            // Beneficiary name + barangay.
+            doc.setTextColor(...black);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(20);
+            nameLines.forEach((line, i) => {
+                doc.text(line, pageW / 2, nameY + i * nameLineH, { align: 'center' });
+            });
+
+            doc.setTextColor(...blue);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(12);
-            doc.text(b.barangay.name, pageW / 2, 40, { align: 'center' });
+            doc.text(`Barangay ${b.barangay.name}`, pageW / 2, barangayY, { align: 'center' });
 
-            doc.addImage(qrPng, 'PNG', (pageW - size) / 2, 55, size, size);
+            // QR code inside a blue rounded frame.
+            const frameX = (pageW - frameSize) / 2;
+            doc.setDrawColor(...blue);
+            doc.setLineWidth(0.8);
+            doc.roundedRect(frameX, frameY, frameSize, frameSize, 4, 4, 'S');
+            doc.addImage(qrPng, 'PNG', frameX + framePad, frameY + framePad, qrSize, qrSize);
 
-            doc.setFont('courier', 'normal');
-            doc.setFontSize(9);
-            doc.text(b.qr_code, pageW / 2, 55 + size + 10, { align: 'center' });
+            doc.setTextColor(...slate);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(11);
+            doc.text('Scan to claim your relief box', pageW / 2, captionY, { align: 'center' });
+
+            // Dashed divider.
+            doc.setDrawColor(...border);
+            doc.setLineWidth(0.3);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.line(cardX + 12, dividerY, cardX + cardW - 12, dividerY);
+            doc.setLineDashPattern([], 0);
+
+            // QR code string in a light pill.
+            doc.setFont('courier', 'bold');
+            doc.setFontSize(10);
+            const pillW = doc.getTextWidth(b.qr_code) + 12;
+            doc.setFillColor(...paleBlue);
+            doc.roundedRect((pageW - pillW) / 2, pillY, pillW, 9, 4.5, 4.5, 'F');
+            doc.setTextColor(...navy);
+            doc.text(b.qr_code, pageW / 2, pillY + 6, { align: 'center' });
+
+            // Footer note.
+            doc.setTextColor(...slate);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text('Present this code at the Barangay Official.', pageW / 2, footerY, {
+                align: 'center',
+            });
 
             if (tab) {
                 tab.location.href = String(doc.output('bloburl'));

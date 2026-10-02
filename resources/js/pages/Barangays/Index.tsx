@@ -89,18 +89,18 @@ export default function Index() {
 
     return (
         <>
-            <Head title="barangays" />
+            <Head title="Barangays" />
 
             <div className="p-6">
                 <FlashAlerts flash={flash} />
 
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">
-                        barangays
+                        Barangays
                     </h1>
                     <Link href={'/barangays/create'}>
                         <Button className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover">
-                            New barangay
+                            New Barangay
                         </Button>
                     </Link>
                 </div>
@@ -137,14 +137,12 @@ export default function Index() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db]  hover:bg-[#d1d5db] ">
-                                  <TableHead className="font-bold tracking-wide text-brand-orange-hover">
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
                                     BRGY Name
                                 </TableHead>
-                                   <TableHead className="font-bold tracking-wide text-brand-orange-hover">
-                                    municipality
-                                </TableHead>
-                               
-                              
+                           
+
+
 
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
@@ -153,7 +151,7 @@ export default function Index() {
                             {barangays.data.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={6} className="py-10 text-center text-sm text-subtle">
-                                        No barangays found.
+                                        No Barangays found.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -163,12 +161,11 @@ export default function Index() {
                                     className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9] "
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
-                                        {barangay.code}
-                                    </TableCell>
-                                   <TableCell className="font-medium text-[#7a3b12]">
                                         {barangay.name}
                                     </TableCell>
-                                  
+                                    
+
+
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-4">
                                             <Link
