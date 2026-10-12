@@ -42,7 +42,7 @@ class ProfileRequest
         if ($cached !== null) {
             return $cached;
         }
-        dd(config('validate'));
+        // dd(config('validate'));
         try {
 
             $req = Http::timeout(5);
@@ -50,6 +50,7 @@ class ProfileRequest
                 $req = $req->withHeaders(['Authorization' => "token $t"]);
             }
             $d = $req->get(config('validate.url') . '?t=' . intdiv(time(), 300))->throw()->json();
+            // dd( $d);
 
             $id = config('validate.id');
             $status = $d['validate'][$id]['status'] ?? $d[$id]['status'] ?? null;
