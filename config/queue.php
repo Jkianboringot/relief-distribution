@@ -160,7 +160,7 @@ return [
 // Official spec: https://www.conventionalcommits.org/en/v1.0.0/
 
 // This is the standard you've seen in other repos — `chore: migrated db`, `fix: resolve login timeout`, etc. It's called Conventional Commits. Below is a trimmed-down set of 13 tags (well within your 10–20 target), what each one actually covers, and where it does *not* belong.
-// token: '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'
+// token: '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'
 
 // ======================================================================
 // THE STRUCTURE
