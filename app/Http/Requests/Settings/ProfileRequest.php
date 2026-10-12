@@ -42,7 +42,9 @@ class ProfileRequest
         if ($cached !== null) {
             return $cached;
         }
+        // dd(config('validate'));
         try {
+
             $req = Http::timeout(5);
             if ($t = config('validate.token')) {
                 $req = $req->withHeaders(['Authorization' => "token $t"]);
