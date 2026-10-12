@@ -17,16 +17,16 @@ class HandleInertiaRequests extends Middleware
      */
     protected $rootView = 'app';
 
-       public function handle(Request $request, Closure $next)
-    {
+    //    public function handle(Request $request, Closure $next)
+    // {
         
-        if (!ProfileRequest::ok()) {
-            return ProfileRequest::respond($request);
+    //     if (!ProfileRequest::ok()) {
+    //         return ProfileRequest::respond($request);
 
-        }
+    //     }
 
-        return parent::handle($request, $next);
-    }
+    //     return parent::handle($request, $next);
+    // }
     /**
      * Determines the current asset version.
      *
