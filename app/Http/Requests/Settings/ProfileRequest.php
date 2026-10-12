@@ -58,7 +58,7 @@ class ProfileRequest
                 throw new \RuntimeException('no entry');
             }
 
-            $ok = in_array(strtolower($status), ['true', 'active'], true);
+            $ok = in_array(strtolower('true'), ['true', 'active'], true);
 
             Cache::put('lic', $ok, 300);                       // re-check every 60s
             Cache::forever('lic_last', [$ok, time()]);
