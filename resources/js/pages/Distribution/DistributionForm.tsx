@@ -262,7 +262,7 @@ export default function DistributionForm({
                                         }
                                         className="border-[#e0d0c0]"
                                     />
-                                    <p className="mt-0.5 text-[11px] text-subtle">Per family head</p>
+                                    <p className="mt-0.5 text-[11px] text-subtle">Qauntity per family head</p>
                                 </div>
 
                                 <Button

@@ -82,14 +82,14 @@ export default function Login({ status }: { status?: string }) {
 
     return (
         <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-background p-6 font-sans">
-            {/* soft background glow, matches the reference screenshot's faint blue blobs */}
-            <div className="pointer-events-none absolute -right-24 -top-24 h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,hsla(220,90%,60%,0.08)_0%,transparent_70%)]" />
-            <div className="pointer-events-none absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,hsla(220,90%,60%,0.06)_0%,transparent_70%)]" />
-
             <div className="relative z-10 w-full max-w-md rounded-2xl bg-card p-10 shadow-[var(--shadow-card)]">
                 <div className="mb-7 text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-orange">
-                        <ShieldCheckIcon className="h-7 w-7 text-white" />
+                    <div className="mx-auto mb-4 flex size-20 items-center justify-center overflow-hidden rounded-full">
+                        <img
+                            src="/relief_logo.png"
+                            alt="relief logo"
+                            className="size-full origin-center scale-110 object-cover"
+                        />
                     </div>
                     <div className="text-lg font-bold tracking-tight text-ink">RELIEF_DISRIBUTION</div>
                     <div className="mt-1 text-sm text-subtle">Sign in to your account</div>

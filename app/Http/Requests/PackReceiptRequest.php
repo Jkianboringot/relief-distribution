@@ -15,7 +15,7 @@ class PackReceiptRequest extends FormRequest
     {
         return [
             'source_name' => ['required', 'string', 'max:150'],
-            'date_received' => ['date'],
+           'date_received' => ['date', 'after_or_equal:today'],
 
             'reliefList' => ['required', 'array', 'max:999', 'min:1'],
             'reliefList.*.relief_pack_id' => ['required', 'exists:relief_packs,id'],
