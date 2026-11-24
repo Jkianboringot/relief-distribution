@@ -241,3 +241,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__ . '/settings.php';
+// Municipalities
+Route::middleware(['auth'])->group(function () {
+    Route::get('/municipalities', [\App\Http\Controllers\MunicipalityController::class, 'index'])->name('municipalities.index');
+    Route::get('/municipalities/create', [\App\Http\Controllers\MunicipalityController::class, 'create'])->name('municipalities.create');
+    Route::post('/municipalities', [\App\Http\Controllers\MunicipalityController::class, 'store'])->name('municipalities.store');
+    Route::get('/municipalities/{municipality}/edit', [\App\Http\Controllers\MunicipalityController::class, 'edit'])->name('municipalities.edit');
+    Route::put('/municipalities/{municipality}', [\App\Http\Controllers\MunicipalityController::class, 'update'])->name('municipalities.update');
+    Route::delete('/municipalities/{municipality}', [\App\Http\Controllers\MunicipalityController::class, 'delete'])->name('municipalities.delete');
+});

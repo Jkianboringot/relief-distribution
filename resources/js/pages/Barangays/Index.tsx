@@ -18,6 +18,7 @@ interface barangay {
     id: number;
     code: string;
     name: string;
+    municipality: { id: number; name: string } | null;
 }
 
 interface Paginatedbarangays {
@@ -140,6 +141,9 @@ export default function Index() {
                                 <TableHead className="font-bold tracking-wide text-brand-orange-hover">
                                     BRGY Name
                                 </TableHead>
+                                <TableHead className="font-bold tracking-wide text-brand-orange-hover">
+                                    Municipality
+                                </TableHead>
                            
 
 
@@ -162,6 +166,9 @@ export default function Index() {
                                 >
                                     <TableCell className="font-medium text-[#7a3b12]">
                                         {barangay.name}
+                                    </TableCell>
+                                    <TableCell className="text-ink">
+                                        {barangay.municipality?.name ?? '—'}
                                     </TableCell>
                                     
 

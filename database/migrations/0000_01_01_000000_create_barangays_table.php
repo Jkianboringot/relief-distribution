@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('barangays', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('municipality_id')->constrained();
+            $table->foreignId('municipality_id')->nullable()->constrained();
             $table->string('code',75)->unique();
             $table->string('name',75)->unique(); 
             

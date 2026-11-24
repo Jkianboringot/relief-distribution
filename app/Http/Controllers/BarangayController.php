@@ -6,6 +6,7 @@ use App\Enums\BarangayType;
 use App\Http\Requests\BarangayRequest;
 use App\Models\Barangay;
 use App\Models\Barangay as ModelsBarangay;
+use App\Models\Municipality;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -39,7 +40,9 @@ class BarangayController extends Controller
 
     public function create()
     {
-        return Inertia::render('Barangays/Create');
+        return Inertia::render('Barangays/Create', [
+            'municipalities' => Municipality::orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function store(BarangayRequest $request)
@@ -55,6 +58,7 @@ class BarangayController extends Controller
 
             Barangay::create([
                 'name' => $data['name'],
+                'municipality_id' => $data['municipality_id'],
                 'code' => $code,
             ]);
 
@@ -75,6 +79,7 @@ class BarangayController extends Controller
         // dd($barangay);
         return Inertia::render('Barangays/Edit', [
             'barangays' => $barangay,
+            'municipalities' => Municipality::orderBy('name')->get(['id', 'name']),
         ]);
 
     }
@@ -103,7 +108,7 @@ class BarangayController extends Controller
     public function index(Request $request)
     {
         $barangays = barangay::query()
-
+            ->with('municipality:id,name')
             ->when($request->string('search')->trim(), function ($query, $search) {
                 $query->where('name', 'like', "{$search}%");
             })

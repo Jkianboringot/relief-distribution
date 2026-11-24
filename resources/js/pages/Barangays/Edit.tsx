@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CircleAlert } from 'lucide-react';
 import { update } from '@/routes/barangays';
 import FlashAlerts from '@/components/flash-alerts';
@@ -10,20 +11,29 @@ import FlashAlerts from '@/components/flash-alerts';
 interface barangay {
     id: number;
     name: string;
+    municipality_id: number | null;
+}
+
+interface Municipality {
+    id: number;
+    name: string;
 }
 
 interface barangayForm {
     name: string;
+    municipality_id: string;
 }
 
 interface Props {
     barangays: barangay;
+    municipalities: Municipality[];
 }
 
-export default function Edit({ barangays }: Props) {
+export default function Edit({ barangays, municipalities }: Props) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
     const { data, setData, put, processing, errors } = useForm<barangayForm>({
         name: barangays.name,
+        municipality_id: barangays.municipality_id ? String(barangays.municipality_id) : '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -63,8 +73,32 @@ export default function Edit({ barangays }: Props) {
                     )}
 
                     <div className="space-y-1">
+                        <Label htmlFor="municipality_id" className="font-semibold text-ink">
+                            Municipality
+                        </Label>
+                        <Select
+                            value={data.municipality_id}
+                            onValueChange={(value) => setData('municipality_id', value)}
+                        >
+                            <SelectTrigger id="municipality_id" className="border-[#e0d0c0]">
+                                <SelectValue placeholder="Select municipality" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {municipalities.map((m) => (
+                                    <SelectItem key={m.id} value={String(m.id)}>
+                                        {m.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.municipality_id && (
+                            <p className="mt-1.5 text-sm text-danger">{errors.municipality_id}</p>
+                        )}
+                    </div>
+
+                    <div className="space-y-1">
                         <Label htmlFor="name" className="font-semibold text-ink">
-                            barangay Name
+                            Barangay Name
                         </Label>
                         <Input
                             id="name"

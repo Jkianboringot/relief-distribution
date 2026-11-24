@@ -89,185 +89,237 @@ export default function Index() {
                 @media print {
                     [data-slot="sidebar"], [data-slot="sidebar-gap"],
                     [data-slot="sidebar-container"], header, nav { display: none !important; }
+                    html, body, [data-slot="sidebar-wrapper"], main {
+                        height: auto !important;
+                        min-height: 0 !important;
+                        overflow: visible !important;
+                    }
                     body { background: white !important; }
                 }
             `}</style>
 
             <div className="p-6">
-                <div className="mb-6 flex items-center justify-between print:hidden">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-ink">Reports</h1>
+                {/* thead/tfoot repeat on every printed page, so the header and footer show on every page of the PDF */}
+                <table className="w-full border-collapse">
+                    {/* print-only header */}
+                    <thead className="hidden print:table-header-group">
+                        <tr>
+                            <td>
+                                <div className="mb-4 flex items-center gap-4 border-b-2 border-black pb-3">
+                                    <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                                        <img
+                                            src="/relief_logo.png"
+                                            alt="relief logo"
+                                            className="size-full origin-center scale-110 object-cover"
+                                        />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-xl font-bold">Relief Goods Distribution System</h1>
+                                        <h2 className="text-lg font-semibold">{typeLabel}</h2>
+                                        <p className="text-xs">
+                                            Generated: {generatedAt}
+                                            {props.filters.from && ` • From: ${props.filters.from}`}
+                                            {props.filters.to && ` • To: ${props.filters.to}`}
+                                            {barangayName && ` • Barangay: ${barangayName}`}
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </thead>
 
-                    {/* Export + Print: ADMIN only */}
-                    {can('reports.download') && (
-                        <div className="flex items-center gap-3">
-                            <a href={`/reports/export?${buildQuery(type, props.filters)}`}>
-                                <Button variant="outline" className="gap-2">
-                                    <Download className="h-4 w-4" />
-                                    Export CSV (Excel)
-                                </Button>
-                            </a>
-                            <Button
-                                onClick={() => window.print()}
-                                className="gap-2 bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
-                            >
-                                <Printer className="h-4 w-4" />
-                                Print / Save as PDF
-                            </Button>
-                        </div>
-                    )}
-                </div>
+                    {/* print-only footer */}
+                    <tfoot className="hidden print:table-footer-group">
+                        <tr>
+                            <td>
+                                <div className="mt-4 flex items-center justify-between gap-3 border-t border-black pt-2 text-xs">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                                            <img
+                                                src="/relief_logo.png"
+                                                alt="relief logo"
+                                                className="size-full origin-center scale-110 object-cover"
+                                            />
+                                        </div>
+                                        <span>Relief Goods Distribution System • Official Report</span>
+                                    </div>
+                                    <span>
+                                        {typeLabel} • Generated: {generatedAt}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
 
-                {/* report type tabs */}
-                <div className="mb-4 flex flex-wrap gap-2 print:hidden">
-                    {visibleTypes.map((t) => (
-                        <button
-                            key={t.value}
-                            type="button"
-                            onClick={() => apply(t.value)}
-                            className={`rounded-full border px-4 py-1.5 text-sm font-medium ${
-                                t.value === type
-                                    ? 'border-brand-orange bg-brand-orange text-white'
-                                    : 'border-[#d1d5db] bg-white text-ink hover:border-brand-orange'
-                            }`}
-                        >
-                            {t.label}
-                        </button>
-                    ))}
-                </div>
+                    <tbody>
+                        <tr>
+                            <td className="align-top">
+                                <div className="mb-6 flex items-center justify-between print:hidden">
+                                    <h1 className="text-3xl font-extrabold tracking-tight text-ink">Reports</h1>
 
-                {/* filters */}
-                <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-[#d1d5db] bg-white p-4 print:hidden">
-                    <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
-                        From
-                        <input
-                            type="date"
-                            className={fieldClass}
-                            value={filters.from ?? ''}
-                            onChange={(e) => setFilters({ ...filters, from: e.target.value || null })}
-                        />
-                    </label>
-                    <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
-                        To
-                        <input
-                            type="date"
-                            className={fieldClass}
-                            value={filters.to ?? ''}
-                            onChange={(e) => setFilters({ ...filters, to: e.target.value || null })}
-                        />
-                    </label>
-                    <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
-                        Barangay
-                        <select
-                            className={fieldClass}
-                            value={filters.barangay_id ?? ''}
-                            onChange={(e) =>
-                                setFilters({ ...filters, barangay_id: e.target.value ? Number(e.target.value) : null })
-                            }
-                        >
-                            <option value="">All barangays</option>
-                            {barangays.map((b) => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
-                    </label>
-                    {type !== 'beneficiaries' && (
-                        <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
-                            Schedule
-                            <select
-                                className={fieldClass}
-                                value={filters.schedule_id ?? ''}
-                                onChange={(e) =>
-                                    setFilters({ ...filters, schedule_id: e.target.value ? Number(e.target.value) : null })
-                                }
-                            >
-                                <option value="">All schedules</option>
-                                {schedules.map((s) => (
-                                    <option key={s.id} value={s.id}>{s.title}</option>
-                                ))}
-                            </select>
-                        </label>
-                    )}
-                    <Button
-                        onClick={() => apply()}
-                        className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
-                    >
-                        Apply
-                    </Button>
-                    <Button variant="outline" onClick={reset}>Reset</Button>
-                    {type === 'inventory' && (
-                        <p className="w-full text-xs text-subtle">
-                            Received uses date received. Allocated/Released use the schedule date. Remaining
-                            (Received − Released) is most accurate with no filters.
-                        </p>
-                    )}
-                </div>
+                                    {/* Export + Print: ADMIN only */}
+                                    {can('reports.download') && (
+                                        <div className="flex items-center gap-3">
+                                            <a href={`/reports/export?${buildQuery(type, props.filters)}`}>
+                                                <Button variant="outline" className="gap-2">
+                                                    <Download className="h-4 w-4" />
+                                                    Export CSV (Excel)
+                                                </Button>
+                                            </a>
+                                            <Button
+                                                onClick={() => window.print()}
+                                                className="gap-2 bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
+                                            >
+                                                <Printer className="h-4 w-4" />
+                                                Print / Save as PDF
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
 
-                {/* print-only header */}
-                <div className="mb-4 hidden print:block">
-                    <h1 className="text-xl font-bold">Relief Goods Distribution System</h1>
-                    <h2 className="text-lg font-semibold">{typeLabel}</h2>
-                    <p className="text-xs">
-                        Generated: {generatedAt}
-                        {props.filters.from && ` • From: ${props.filters.from}`}
-                        {props.filters.to && ` • To: ${props.filters.to}`}
-                        {barangayName && ` • Barangay: ${barangayName}`}
-                    </p>
-                </div>
-
-                {/* summary */}
-                <div className="mb-4 flex flex-wrap gap-3">
-                    {summary.map((s) => (
-                        <div
-                            key={s.label}
-                            className="min-w-[140px] rounded-xl border border-[#d1d5db] bg-white px-4 py-3"
-                        >
-                            <p className="text-xs font-medium text-subtle">{s.label}</p>
-                            <p className="text-2xl font-extrabold text-ink">{s.value.toLocaleString()}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* table */}
-                <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db] hover:bg-[#d1d5db]">
-                                {columns.map((c) => (
-                                    <TableHead
-                                        key={c.key}
-                                        className={`font-bold tracking-wide text-brand-orange-hover ${c.align === 'right' ? 'text-right' : ''}`}
-                                    >
-                                        {c.label}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {rows.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={columns.length} className="py-10 text-center text-sm text-subtle">
-                                        No records found for the selected filters.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                            {rows.map((row, i) => (
-                                <TableRow
-                                    key={i}
-                                    className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
-                                >
-                                    {columns.map((c) => (
-                                        <TableCell
-                                            key={c.key}
-                                            className={`text-ink ${c.align === 'right' ? 'text-right' : ''}`}
+                                {/* report type tabs */}
+                                <div className="mb-4 flex flex-wrap gap-2 print:hidden">
+                                    {visibleTypes.map((t) => (
+                                        <button
+                                            key={t.value}
+                                            type="button"
+                                            onClick={() => apply(t.value)}
+                                            className={`rounded-full border px-4 py-1.5 text-sm font-medium ${
+                                                t.value === type
+                                                    ? 'border-brand-orange bg-brand-orange text-white'
+                                                    : 'border-[#d1d5db] bg-white text-ink hover:border-brand-orange'
+                                            }`}
                                         >
-                                            {formatCell(row[c.key])}
-                                        </TableCell>
+                                            {t.label}
+                                        </button>
                                     ))}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+                                </div>
+
+                                {/* filters */}
+                                <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-[#d1d5db] bg-white p-4 print:hidden">
+                                    <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
+                                        From
+                                        <input
+                                            type="date"
+                                            className={fieldClass}
+                                            value={filters.from ?? ''}
+                                            onChange={(e) => setFilters({ ...filters, from: e.target.value || null })}
+                                        />
+                                    </label>
+                                    <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
+                                        To
+                                        <input
+                                            type="date"
+                                            className={fieldClass}
+                                            value={filters.to ?? ''}
+                                            onChange={(e) => setFilters({ ...filters, to: e.target.value || null })}
+                                        />
+                                    </label>
+                                    <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
+                                        Barangay
+                                        <select
+                                            className={fieldClass}
+                                            value={filters.barangay_id ?? ''}
+                                            onChange={(e) =>
+                                                setFilters({ ...filters, barangay_id: e.target.value ? Number(e.target.value) : null })
+                                            }
+                                        >
+                                            <option value="">All barangays</option>
+                                            {barangays.map((b) => (
+                                                <option key={b.id} value={b.id}>{b.name}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    {type !== 'beneficiaries' && (
+                                        <label className="flex flex-col gap-1 text-xs font-medium text-subtle">
+                                            Schedule
+                                            <select
+                                                className={fieldClass}
+                                                value={filters.schedule_id ?? ''}
+                                                onChange={(e) =>
+                                                    setFilters({ ...filters, schedule_id: e.target.value ? Number(e.target.value) : null })
+                                                }
+                                            >
+                                                <option value="">All schedules</option>
+                                                {schedules.map((s) => (
+                                                    <option key={s.id} value={s.id}>{s.title}</option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                    )}
+                                    <Button
+                                        onClick={() => apply()}
+                                        className="bg-brand-orange font-bold text-white hover:bg-brand-orange-hover"
+                                    >
+                                        Apply
+                                    </Button>
+                                    <Button variant="outline" onClick={reset}>Reset</Button>
+                                    {type === 'inventory' && (
+                                        <p className="w-full text-xs text-subtle">
+                                            Received uses date received. Allocated/Released use the schedule date. Remaining
+                                            (Received − Released) is most accurate with no filters.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* summary */}
+                                <div className="mb-4 flex flex-wrap gap-3">
+                                    {summary.map((s) => (
+                                        <div
+                                            key={s.label}
+                                            className="min-w-[140px] rounded-xl border border-[#d1d5db] bg-white px-4 py-3"
+                                        >
+                                            <p className="text-xs font-medium text-subtle">{s.label}</p>
+                                            <p className="text-2xl font-extrabold text-ink">{s.value.toLocaleString()}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* table */}
+                                <div className="overflow-hidden rounded-xl border border-[#d1d5db] bg-[#ffffff]">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="border-b border-[#d1d5db] bg-[#d1d5db] hover:bg-[#d1d5db]">
+                                                {columns.map((c) => (
+                                                    <TableHead
+                                                        key={c.key}
+                                                        className={`font-bold tracking-wide text-brand-orange-hover ${c.align === 'right' ? 'text-right' : ''}`}
+                                                    >
+                                                        {c.label}
+                                                    </TableHead>
+                                                ))}
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {rows.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={columns.length} className="py-10 text-center text-sm text-subtle">
+                                                        No records found for the selected filters.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                            {rows.map((row, i) => (
+                                                <TableRow
+                                                    key={i}
+                                                    className="border-b border-[#d1d5db] last:border-0 hover:bg-[#e0e4e9]"
+                                                >
+                                                    {columns.map((c) => (
+                                                        <TableCell
+                                                            key={c.key}
+                                                            className={`text-ink ${c.align === 'right' ? 'text-right' : ''}`}
+                                                        >
+                                                            {formatCell(row[c.key])}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </>
     );

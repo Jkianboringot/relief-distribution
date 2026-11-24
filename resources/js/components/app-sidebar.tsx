@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid, House, Package, ShoppingCart, Building2, Boxes, User, University, PackagePlus, ClipboardMinus } from 'lucide-react';
+import { BookOpen, FolderGit2, LayoutGrid, House, Package, ShoppingCart, Building2, Boxes, User, University, PackagePlus, ClipboardMinus, Landmark } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -29,6 +29,12 @@ const mainNavItems: PermissionNavItem[] = [
     },
 
 
+    {
+        title: 'Municipality',
+        href: '/municipalities',
+        icon: Landmark,
+        permission: 'barangays.view',
+    },
     {
         title: 'Barangay',
         href: '/barangays',

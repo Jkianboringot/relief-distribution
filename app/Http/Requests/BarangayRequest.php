@@ -27,6 +27,7 @@ class BarangayRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:75', 'min:3', Rule::unique('barangays', 'name')->ignore($this->route('barangays'))],
+            'municipality_id' => ['required', 'integer', 'exists:municipalities,id'],
         ];
     }
 }

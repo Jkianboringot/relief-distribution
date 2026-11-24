@@ -11,7 +11,7 @@ import FlashAlerts from '@/components/flash-alerts';
 
 interface barangayForm {
     name: string;
-
+    municipality_id: string;
 }
 
 interface SelectOption {
@@ -19,15 +19,21 @@ interface SelectOption {
     label: string;
 }
 
+interface Municipality {
+    id: number;
+    name: string;
+}
 
 
 
 
 
-export default function Create() {
+
+export default function Create({ municipalities }: { municipalities: Municipality[] }) {
     const { flash } = usePage<{ flash: { message?: string; error?: string } }>().props;
     const { data, setData, post, processing, errors } = useForm<barangayForm>({
         name: '',
+        municipality_id: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -68,8 +74,32 @@ export default function Create() {
 
 
                         <div className="space-y-1">
+                            <Label htmlFor="municipality_id" className="font-semibold text-ink">
+                                Municipality
+                            </Label>
+                            <Select
+                                value={data.municipality_id}
+                                onValueChange={(value) => setData('municipality_id', value)}
+                            >
+                                <SelectTrigger id="municipality_id" className="border-[#e0d0c0]">
+                                    <SelectValue placeholder="Select municipality" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {municipalities.map((m) => (
+                                        <SelectItem key={m.id} value={String(m.id)}>
+                                            {m.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.municipality_id && (
+                                <p className="mt-1.5 text-sm text-danger">{errors.municipality_id}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-1">
                             <Label htmlFor="name" className="font-semibold text-ink">
-                                barangay Name
+                                Barangay Name
                             </Label>
                             <Input
                                 id="name"
